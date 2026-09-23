@@ -32,6 +32,7 @@ import { ActivityAuditPage } from './pages/ActivityAuditPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { HelpDocsPage } from './pages/HelpDocsPage';
 import { PoliciesPage } from './pages/PoliciesPage';
+import { SoftWashBackdrop } from './components/visual/SoftWashBackdrop';
 
 function AppRoutes() {
   return (
@@ -233,7 +234,10 @@ export function App() {
     <AuthProvider>
       <AppProvider>
         <Router>
-          <AppRoutes />
+          <SoftWashBackdrop />
+          <div className="relative z-[1] min-h-full">
+            <AppRoutes />
+          </div>
         </Router>
       </AppProvider>
     </AuthProvider>

@@ -22,7 +22,7 @@ export const ToastContainer: React.FC = () => {
           <div
             key={toast.id}
             className={clsx(
-              'pointer-events-auto flex items-start gap-3 p-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-lg text-xs transition-all duration-200 animate-in slide-in-from-bottom-2'
+              'pointer-events-auto flex items-start gap-3 p-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-lg text-xs'
             )}
           >
             {icons[toast.type]}

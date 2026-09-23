@@ -8,7 +8,7 @@ export const AuthGate: React.FC<{ children: React.ReactNode }> = ({ children }) 
 
   if (!isReady) {
     return (
-      <div className="h-screen grid place-items-center bg-[var(--cs-bg)] text-[13px] text-[var(--cs-ink-3)]">
+      <div className="relative z-[1] h-screen grid place-items-center cs-canvas text-[13px] text-[var(--cs-ink-3)]">
         Loading…
       </div>
     );

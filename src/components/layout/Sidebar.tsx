@@ -95,7 +95,7 @@ export const Sidebar: React.FC = () => {
   const aside = (
     <aside
       className={clsx(
-        'h-full bg-[var(--cs-surface)] border-r border-[var(--cs-line)] text-[var(--cs-ink-2)] flex flex-col shrink-0 z-30',
+        'h-full bg-[var(--cs-surface)] border-r border-[var(--cs-line)] text-[var(--cs-ink-2)] flex flex-col shrink-0 z-30 overflow-hidden',
         sidebarCollapsed ? 'w-[72px]' : 'w-64'
       )}
     >

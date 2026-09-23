@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { Logo } from '../../components/brand/Logo';
+import { GoogleDots } from '../../components/brand/GoogleDots';
 import { Button } from '../../components/ui/Button';
 import { useAuth } from '../../context/AuthContext';
 import { UserRole } from '../../types';
@@ -31,11 +32,12 @@ export const SignupPage: React.FC = () => {
     'mt-1 w-full h-10 px-3 rounded-[4px] border border-[var(--cs-line-strong)] bg-[var(--cs-surface)] text-[14px]';
 
   return (
-    <div className="min-h-screen grid place-items-center px-4 py-10 bg-[var(--cs-bg)]">
+    <div className="relative z-[1] min-h-screen cs-canvas grid place-items-center px-4 py-10">
       <div className="w-full max-w-[480px]">
         <div className="flex justify-center mb-8">
-          <Link to="/">
+          <Link to="/" className="inline-flex flex-col items-center gap-2">
             <Logo size={32} withWordmark />
+            <GoogleDots />
           </Link>
         </div>
         <div className="bg-[var(--cs-surface)] border border-[var(--cs-line)] rounded-lg p-8 cs-shadow">

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, NavLink, Outlet } from 'react-router-dom';
 import { Logo } from '../brand/Logo';
+import { GoogleDots } from '../brand/GoogleDots';
 import { useAuth } from '../../context/AuthContext';
 
 export const PublicShell: React.FC = () => {
@@ -12,11 +13,12 @@ export const PublicShell: React.FC = () => {
     }`;
 
   return (
-    <div className="min-h-screen bg-[var(--cs-bg)] text-[var(--cs-ink)] flex flex-col">
+    <div className="min-h-screen cs-canvas text-[var(--cs-ink)] flex flex-col">
       <header className="sticky top-0 z-30 h-14 bg-[var(--cs-surface)] border-b border-[var(--cs-line)]">
         <div className="mx-auto max-w-[1120px] h-full px-4 flex items-center justify-between gap-4">
-          <Link to="/" aria-label="CloudSense AI home">
+          <Link to="/" aria-label="CloudSense AI home" className="inline-flex items-center gap-2.5">
             <Logo size={28} withWordmark compact />
+            <GoogleDots />
           </Link>
           <nav className="hidden md:flex items-center gap-1">
             <NavLink to="/product" className={linkCls}>

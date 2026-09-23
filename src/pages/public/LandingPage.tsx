@@ -10,37 +10,42 @@ import {
   Workflow,
   CheckCircle2,
 } from 'lucide-react';
+import { GoogleDots } from '../../components/brand/GoogleDots';
 
 const capabilities = [
   {
     icon: LineChart,
+    color: '#4285F4',
     title: 'Forecast spend',
     body: 'Prophet models daily and monthly AWS cost with confidence intervals, seasonality, and budget risk — not a static chart.',
   },
   {
     icon: Scale,
+    color: '#34A853',
     title: 'Unit economics',
     body: 'XGBoost connects cloud invoices to product KPIs: cost per user, request, tenant, and transaction.',
   },
   {
     icon: ShieldAlert,
+    color: '#EA4335',
     title: 'Anomaly & DoW signals',
     body: 'Isolation Forest flags unusual cost velocity and provisioning. Events are labeled potential Denial-of-Wallet — never assumed malicious.',
   },
   {
     icon: Cpu,
+    color: '#FBBC05',
     title: 'Explainable recommendations',
     body: 'Every action includes SHAP feature influence, evidence, savings, risk, and who must approve it.',
   },
 ];
 
 const pipeline = [
-  { step: '01', title: 'Ingest', body: 'Billing, CloudWatch, and business KPIs' },
-  { step: '02', title: 'Models', body: 'Prophet · XGBoost · Isolation Forest' },
-  { step: '03', title: 'XAI', body: 'Confidence, root cause, SHAP, ROI' },
-  { step: '04', title: 'Approve', body: 'Human-in-the-loop governance' },
-  { step: '05', title: 'Remediate', body: 'MCP → backend → Boto3 on AWS' },
-  { step: '06', title: 'Verify', body: 'Audit log and notifications' },
+  { step: '01', title: 'Ingest', body: 'Billing, CloudWatch, and business KPIs', accent: '#4285F4' },
+  { step: '02', title: 'Models', body: 'Prophet · XGBoost · Isolation Forest', accent: '#EA4335' },
+  { step: '03', title: 'XAI', body: 'Confidence, root cause, SHAP, ROI', accent: '#FBBC05' },
+  { step: '04', title: 'Approve', body: 'Human-in-the-loop governance', accent: '#34A853' },
+  { step: '05', title: 'Remediate', body: 'MCP → backend → Boto3 on AWS', accent: '#4285F4' },
+  { step: '06', title: 'Verify', body: 'Audit log and notifications', accent: '#34A853' },
 ];
 
 export const LandingPage: React.FC = () => {
@@ -48,7 +53,8 @@ export const LandingPage: React.FC = () => {
     <div>
       <section className="bg-[var(--cs-surface)] border-b border-[var(--cs-line)]">
         <div className="mx-auto max-w-[1120px] px-4 py-16 md:py-20">
-          <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-[var(--cs-ink-3)]">
+          <GoogleDots size="md" />
+          <p className="mt-3 text-[12px] font-medium uppercase tracking-[0.08em] text-[var(--cs-ink-3)]">
             FinOps · SecOps · Explainable AI
           </p>
           <h1 className="mt-3 max-w-3xl text-[36px] md:text-[44px] leading-[1.15] font-normal tracking-tight text-[var(--cs-ink)]">
@@ -98,7 +104,12 @@ export const LandingPage: React.FC = () => {
             'What happens if we apply the change?',
           ].map((q, i) => (
             <li key={q} className="bg-[var(--cs-surface)] p-4 text-[14px]">
-              <span className="font-mono text-[11px] text-[var(--cs-ink-3)]">{String(i + 1).padStart(2, '0')}</span>
+              <span
+                className="font-mono text-[11px]"
+                style={{ color: ['#4285F4', '#EA4335', '#FBBC05', '#34A853', '#4285F4', '#34A853'][i] }}
+              >
+                {String(i + 1).padStart(2, '0')}
+              </span>
               <p className="mt-1 text-[var(--cs-ink)]">{q}</p>
             </li>
           ))}
@@ -111,7 +122,10 @@ export const LandingPage: React.FC = () => {
           <div className="mt-8 grid md:grid-cols-2 gap-6">
             {capabilities.map((c) => (
               <div key={c.title} className="flex gap-4">
-                <div className="w-9 h-9 rounded-[4px] bg-[var(--cs-brand-soft)] text-[var(--cs-brand)] grid place-items-center shrink-0">
+                <div
+                  className="w-9 h-9 rounded-[4px] text-white grid place-items-center shrink-0"
+                  style={{ background: c.color }}
+                >
                   <c.icon className="w-4 h-4" />
                 </div>
                 <div>
@@ -130,7 +144,9 @@ export const LandingPage: React.FC = () => {
         <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-6 gap-3">
           {pipeline.map((p) => (
             <div key={p.step} className="border border-[var(--cs-line)] rounded-lg p-3 bg-[var(--cs-surface)]">
-              <p className="font-mono text-[11px] text-[var(--cs-brand)]">{p.step}</p>
+              <p className="font-mono text-[11px] font-medium" style={{ color: p.accent }}>
+                {p.step}
+              </p>
               <p className="mt-1 text-[14px] font-medium">{p.title}</p>
               <p className="mt-1 text-[12px] text-[var(--cs-ink-3)] leading-snug">{p.body}</p>
             </div>
@@ -157,7 +173,7 @@ export const LandingPage: React.FC = () => {
                 'Immutable audit: who approved, execution ID, result',
               ].map((t) => (
                 <li key={t} className="flex gap-2">
-                  <CheckCircle2 className="w-4 h-4 mt-0.5 text-[var(--cs-ok)] shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#34A853] shrink-0" />
                   {t}
                 </li>
               ))}

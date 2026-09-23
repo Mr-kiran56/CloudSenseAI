@@ -24,20 +24,20 @@ export const Logo: React.FC<LogoProps> = ({
         aria-hidden
         className="shrink-0"
       >
-        <rect width="32" height="32" rx="6" fill={inverted ? '#fff' : '#1a73e8'} />
+        <rect width="32" height="32" rx="6" fill={inverted ? '#fff' : '#5b7cfa'} />
         <path
           d="M8 20.5c0-4.4 3.6-8 8-8s8 3.6 8 8"
-          stroke={inverted ? '#1a73e8' : '#fff'}
+          stroke={inverted ? '#5b7cfa' : '#fff'}
           strokeWidth="2.2"
           strokeLinecap="round"
         />
         <path
           d="M12 20.5c0-2.2 1.8-4 4-4s4 1.8 4 4"
-          stroke={inverted ? '#1a73e8' : '#fff'}
+          stroke={inverted ? '#5b7cfa' : '#fff'}
           strokeWidth="2.2"
           strokeLinecap="round"
         />
-        <circle cx="16" cy="21" r="1.8" fill={inverted ? '#1a73e8' : '#fff'} />
+        <circle cx="16" cy="21" r="1.8" fill={inverted ? '#5b7cfa' : '#fff'} />
       </svg>
       {withWordmark && (
         <span className="min-w-0 leading-tight">

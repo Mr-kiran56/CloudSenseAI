@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { UserRole } from '../../types';
 import { Kbd } from '../ui/PageHeader';
+import { GoogleDots } from '../brand/GoogleDots';
 
 export const Topbar: React.FC = () => {
   const {
@@ -87,6 +88,7 @@ export const Topbar: React.FC = () => {
         >
           <Menu className="w-5 h-5" />
         </button>
+        <GoogleDots />
 
         <button
           onClick={() => setCommandPaletteOpen(true)}

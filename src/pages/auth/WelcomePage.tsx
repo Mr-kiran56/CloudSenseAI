@@ -23,7 +23,7 @@ export const WelcomePage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen grid place-items-center px-4 py-10 bg-[var(--cs-bg)]">
+    <div className="relative z-[1] min-h-screen cs-canvas grid place-items-center px-4 py-10">
       <div className="w-full max-w-[560px] bg-[var(--cs-surface)] border border-[var(--cs-line)] rounded-lg p-8 cs-shadow">
         <Logo size={28} withWordmark />
         <h1 className="mt-6 text-[24px] font-normal tracking-tight">Welcome to CloudSense AI</h1>

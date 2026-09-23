@@ -34,7 +34,7 @@ export const ShapFeatureChart: React.FC<ShapFeatureChartProps> = ({
       </div>
 
       {showExplanation && (
-        <div className="p-3 text-xs bg-indigo-50/50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-900/40 rounded-md text-indigo-900 dark:text-indigo-200 leading-relaxed animate-in fade-in duration-150">
+        <div className="p-3 text-xs bg-indigo-50/50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-900/40 rounded-md text-indigo-900 dark:text-indigo-200 leading-relaxed">
           <strong>Explainable AI (SHAP):</strong> Feature attribution measures the exact impact of each metric on CloudSense AI’s optimization model. Positive bars (green/indigo) push the recommendation score higher, while negative values indicate operational friction or countervailing risk.
         </div>
       )}

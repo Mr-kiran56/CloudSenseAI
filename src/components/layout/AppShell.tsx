@@ -7,7 +7,7 @@ import { KeyboardShortcuts } from '../ui/KeyboardShortcuts';
 
 export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[var(--cs-bg)] text-[var(--cs-ink)]">
+    <div className="flex h-screen w-screen overflow-hidden cs-canvas text-[var(--cs-ink)]">
       <Sidebar />
       <div className="flex flex-col flex-1 min-w-0 h-full overflow-hidden">
         <Topbar />
