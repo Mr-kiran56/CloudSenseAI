@@ -196,7 +196,7 @@ export const Dashboard: React.FC = () => {
                   stroke="var(--cs-line)"
                   tickFormatter={(val) => `$${val}`}
                 />
-                <Tooltip contentStyle={tooltipStyle} formatter={(val: number | string) => [val ? `$${val}` : '—', '']} />
+                <Tooltip contentStyle={tooltipStyle} formatter={(val: any) => [val ? `$${val}` : '—', '']} />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
                 <ReferenceLine
                   y={900}

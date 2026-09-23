@@ -171,7 +171,7 @@ export const SettingsPage: React.FC = () => {
 
           {['access', 'integrations', 'accounts'].includes(active) && (
             <Card>
-              <CardHeader title={sections.find((s) => s.id === active)?.label} />
+              <CardHeader title={sections.find((s) => s.id === active)?.label || ''} />
               <p className="text-[13px] text-[var(--cs-ink-2)]">
                 Managed in the matching console area. This settings search exists so operators can find the control
                 without hunting the sidebar.

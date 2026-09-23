@@ -7,6 +7,7 @@ import { apiService } from '../services/api';
 import { Anomaly } from '../types';
 import { ShieldAlert, Zap, Clock, CheckCircle2, AlertTriangle, ArrowUpRight, Activity, ShieldCheck } from 'lucide-react';
 import { PageHeader } from '../components/ui/PageHeader';
+import { useApp } from '../context/AppContext';
 
 export const AnomaliesDoWPage: React.FC = () => {
   const { addToast } = useApp();

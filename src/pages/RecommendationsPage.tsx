@@ -7,6 +7,7 @@ import { Skeleton } from '../components/ui/Skeleton';
 import { apiService } from '../services/api';
 import { Recommendation } from '../types';
 import { PageHeader } from '../components/ui/PageHeader';
+import { ArrowRight } from 'lucide-react';
 
 export const RecommendationsPage: React.FC = () => {
   const navigate = useNavigate();
