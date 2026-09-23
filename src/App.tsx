@@ -33,6 +33,7 @@ import { SettingsPage } from './pages/SettingsPage';
 import { HelpDocsPage } from './pages/HelpDocsPage';
 import { PoliciesPage } from './pages/PoliciesPage';
 import { SoftWashBackdrop } from './components/visual/SoftWashBackdrop';
+import { DesktopOnlyNotice } from './components/layout/DesktopOnlyNotice';
 
 function AppRoutes() {
   return (
@@ -235,6 +236,7 @@ export function App() {
       <AppProvider>
         <Router>
           <SoftWashBackdrop />
+          <DesktopOnlyNotice />
           <div className="relative z-[1] min-h-full">
             <AppRoutes />
           </div>

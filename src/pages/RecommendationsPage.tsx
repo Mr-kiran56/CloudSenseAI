@@ -6,7 +6,7 @@ import { Badge, RiskBadge, ConfidenceBadge } from '../components/ui/Badge';
 import { Skeleton } from '../components/ui/Skeleton';
 import { apiService } from '../services/api';
 import { Recommendation } from '../types';
-import { Sparkles, ArrowRight, DollarSign, ShieldAlert, CheckCircle2, Sliders, Filter } from 'lucide-react';
+import { PageHeader } from '../components/ui/PageHeader';
 
 export const RecommendationsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -34,44 +34,32 @@ export const RecommendationsPage: React.FC = () => {
   const filteredRecs = recommendations.filter((r) => statusTab === 'all' || r.status === statusTab);
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-slate-200 dark:border-slate-800">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-[22px] font-normal tracking-tight text-[var(--cs-ink)]">
-              CloudSense Recommendations Inbox
-            </h1>
-            <Badge variant="ai" icon>SHAP Explained Optimization Engine</Badge>
+    <div className="space-y-5">
+      <PageHeader
+        title="Recommendations"
+        description="Rightsizing and remediation proposals that still need a person to approve them."
+        actions={
+          <div className="inline-flex items-center rounded-[4px] border border-[var(--cs-line)] bg-[var(--cs-surface)] p-0.5">
+            {[
+              { id: 'needs_review', label: 'Needs review' },
+              { id: 'approved', label: 'Approved' },
+              { id: 'all', label: 'All' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setStatusTab(tab.id)}
+                className={`h-7 px-2.5 text-[12px] rounded-[3px] ${
+                  statusTab === tab.id
+                    ? 'bg-[var(--cs-brand-soft)] text-[var(--cs-brand)] font-medium'
+                    : 'text-[var(--cs-ink-3)]'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            AI-generated rightsizing and architectural remediation proposals requiring human governance sign-off
-          </p>
-        </div>
-
-        <div className="flex bg-slate-200 dark:bg-slate-800 p-0.5 rounded-md text-xs font-medium">
-          {[
-            { id: 'needs_review', label: 'Needs Review', count: recommendations.filter((r) => r.status === 'needs_review').length },
-            { id: 'approved', label: 'Approved', count: recommendations.filter((r) => r.status === 'approved').length },
-            { id: 'all', label: 'All Recommendations', count: recommendations.length },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setStatusTab(tab.id)}
-              className={`px-3 py-1.5 rounded transition-colors flex items-center gap-1.5 ${
-                statusTab === tab.id
-                  ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-2xs font-semibold'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-              }`}
-            >
-              <span>{tab.label}</span>
-              <span className="px-1.5 py-0.2 text-[10px] rounded-full bg-slate-100 dark:bg-slate-800 font-mono">
-                {tab.count}
-              </span>
-            </button>
-          ))}
-        </div>
-      </div>
+        }
+      />
 
       {/* Recommendation Cards List */}
       <div className="space-y-4">

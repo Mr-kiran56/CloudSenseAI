@@ -42,10 +42,9 @@ export const MetricCard: React.FC<MetricCardProps> = ({
 
   return (
     <Card hoverable={Boolean(onClick)} onClick={onClick} className="p-3.5 overflow-hidden">
-      {accent && <div className="-mx-3.5 -mt-3.5 mb-3 h-1" style={{ background: accent }} />}
       <div className="flex items-start justify-between gap-2">
         <p className="text-[12px] text-[var(--cs-ink-3)]">{label}</p>
-        {icon && <span style={{ color: accent || 'var(--cs-ink-3)' }}>{icon}</span>}
+        {icon && <span className="text-[var(--cs-ink-3)]">{icon}</span>}
       </div>
       <p className="mt-1.5 text-[22px] leading-7 font-medium tabular-nums tracking-tight text-[var(--cs-ink)]">
         {value}
@@ -60,7 +59,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
           <span />
         )}
         {spark && spark.length > 1 && (
-          <svg width="64" height="18" viewBox="0 0 64 18" style={{ color: accent || 'var(--cs-brand)' }} aria-hidden>
+          <svg width="64" height="18" viewBox="0 0 64 18" className="text-[var(--cs-brand)]" aria-hidden>
             <polyline
               fill="none"
               stroke="currentColor"

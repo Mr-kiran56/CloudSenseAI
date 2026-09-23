@@ -20,7 +20,7 @@ export const Card: React.FC<CardProps> = ({
     <div
       onClick={onClick}
       className={clsx(
-        'bg-[var(--cs-surface)] border border-[var(--cs-line)] rounded-lg',
+        'bg-[var(--cs-surface)] border border-[var(--cs-line)] rounded-lg cs-shadow',
         padding && 'p-4',
         hoverable && 'hover:border-[var(--cs-line-strong)] hover:cs-shadow cursor-pointer',
         className

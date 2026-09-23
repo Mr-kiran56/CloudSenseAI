@@ -29,6 +29,7 @@ import {
   Legend,
   ReferenceLine,
 } from 'recharts';
+import { PageHeader, SegmentedControl } from '../components/ui/PageHeader';
 import { useApp } from '../context/AppContext';
 
 export const CostForecastPage: React.FC = () => {
@@ -83,66 +84,44 @@ export const CostForecastPage: React.FC = () => {
   if (loading) return <Skeleton className="h-96 w-full" />;
 
   return (
-    <div className="space-y-6">
-      {/* Header Controls */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-slate-200 dark:border-slate-800">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-[22px] font-normal tracking-tight text-[var(--cs-ink)]">
-              Cost & forecast
-            </h1>
-            <Badge variant="ai" icon>Prophet Time-Series Engine</Badge>
-          </div>
-          <p className="text-[13px] text-[var(--cs-ink-3)] mt-1">
-            Actual spend, Prophet forecast, confidence interval, and budget. Question: how much will we spend?
-          </p>
-        </div>
+    <div className="space-y-5">
+      <PageHeader
+        title="Cost & forecast"
+        description="Actual spend, Prophet forecast, confidence interval, and budget. Question: how much will we spend?"
+        actions={
+          <>
+            <SegmentedControl
+              options={['Daily', 'Weekly', 'Monthly', 'Quarterly', 'Annual']}
+              value={granularity}
+              onChange={(v) => setGranularity(v as typeof granularity)}
+            />
+            <Button variant="outline" size="sm" icon={<Download className="w-3.5 h-3.5" />} onClick={handleExport}>
+              Export
+            </Button>
+          </>
+        }
+      />
 
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* Granularity Switcher */}
-          <div className="flex bg-slate-200 dark:bg-slate-800 p-0.5 rounded-md text-xs font-medium">
-            {(['Daily', 'Weekly', 'Monthly', 'Quarterly', 'Annual'] as const).map((g) => (
-              <button
-                key={g}
-                onClick={() => setGranularity(g)}
-                className={`px-2.5 py-1 rounded transition-colors ${
-                  granularity === g
-                    ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-2xs font-semibold'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-                }`}
-              >
-                {g}
-              </button>
-            ))}
-          </div>
-
-          <Button variant="outline" size="sm" icon={<Download className="w-3.5 h-3.5" />} onClick={handleExport}>
-            Export Dataset
-          </Button>
-        </div>
-      </div>
-
-      {/* Financial KPIs Banner */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <span className="text-xs text-slate-500">Current MTD Spend</span>
-          <div className="text-2xl font-bold font-mono text-slate-900 dark:text-slate-100 mt-1">$24,680</div>
-          <p className="text-[11px] text-emerald-600 font-semibold mt-1">94.2% of target budget consumed</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <Card className="p-4">
+          <p className="text-[12px] text-[var(--cs-ink-3)]">Current MTD spend</p>
+          <p className="mt-1.5 text-[22px] font-medium tabular-nums">$24,680</p>
+          <p className="mt-1 text-[11px] text-[var(--cs-ink-3)]">94.2% of target budget consumed</p>
         </Card>
-        <Card>
-          <span className="text-xs text-slate-500">Projected Month-End Spend</span>
-          <div className="text-2xl font-bold font-mono text-indigo-600 dark:text-indigo-400 mt-1">$29,120</div>
-          <p className="text-[11px] text-rose-500 font-semibold mt-1">+$4,120 above $25K budget threshold</p>
+        <Card className="p-4">
+          <p className="text-[12px] text-[var(--cs-ink-3)]">Projected month-end</p>
+          <p className="mt-1.5 text-[22px] font-medium tabular-nums">$29,120</p>
+          <p className="mt-1 text-[11px] text-[var(--cs-crit)]">$4,120 above the $25K threshold</p>
         </Card>
-        <Card>
-          <span className="text-xs text-slate-500">Model Variance (MAPE)</span>
-          <div className="text-2xl font-bold font-mono text-slate-900 dark:text-slate-100 mt-1">± 2.4%</div>
-          <p className="text-[11px] text-slate-400 mt-1">Prophet model accuracy rating</p>
+        <Card className="p-4">
+          <p className="text-[12px] text-[var(--cs-ink-3)]">Model variance (MAPE)</p>
+          <p className="mt-1.5 text-[22px] font-medium tabular-nums">±2.4%</p>
+          <p className="mt-1 text-[11px] text-[var(--cs-ink-3)]">Prophet accuracy on this series</p>
         </Card>
-        <Card>
-          <span className="text-xs text-slate-500">Potential Savings Opportunities</span>
-          <div className="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-1">$6,840 / mo</div>
-          <p className="text-[11px] text-emerald-500 font-semibold mt-1">Across 4 rightsizing recommendations</p>
+        <Card className="p-4">
+          <p className="text-[12px] text-[var(--cs-ink-3)]">Potential savings</p>
+          <p className="mt-1.5 text-[22px] font-medium tabular-nums">$6,840 / mo</p>
+          <p className="mt-1 text-[11px] text-[var(--cs-ok)]">Across 4 rightsizing recommendations</p>
         </Card>
       </div>
 
@@ -156,20 +135,26 @@ export const CostForecastPage: React.FC = () => {
         <div className="h-96 w-full pt-4">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={forecast} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.2} />
-              <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="#64748b" />
-              <YAxis tick={{ fontSize: 11 }} stroke="#64748b" tickFormatter={(val) => `$${val}`} />
+              <CartesianGrid stroke="var(--cs-line)" vertical={false} />
+              <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'var(--cs-ink-3)' }} stroke="var(--cs-line)" />
+              <YAxis tick={{ fontSize: 11, fill: 'var(--cs-ink-3)' }} stroke="var(--cs-line)" tickFormatter={(val) => `$${val}`} />
               <Tooltip
-                contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', fontSize: '12px', color: '#fff' }}
+                contentStyle={{
+                  backgroundColor: 'var(--cs-surface)',
+                  border: '1px solid var(--cs-line)',
+                  borderRadius: 4,
+                  fontSize: 12,
+                  color: 'var(--cs-ink)',
+                }}
               />
-              <Legend wrapperStyle={{ fontSize: '12px' }} />
-              <ReferenceLine y={900} label={{ value: 'Daily Budget Limit ($900)', fill: '#ef4444', fontSize: 11 }} stroke="#ef4444" strokeDasharray="4 4" />
+              <Legend wrapperStyle={{ fontSize: 12 }} />
+              <ReferenceLine y={900} label={{ value: 'Daily budget $900', fill: 'var(--cs-crit)', fontSize: 11 }} stroke="var(--cs-crit)" strokeDasharray="4 4" />
               
-              <Area type="monotone" dataKey="confidenceUpper" name="Upper Confidence (95%)" stroke="none" fill="#818cf8" fillOpacity={0.15} />
-              <Area type="monotone" dataKey="confidenceLower" name="Lower Confidence (95%)" stroke="none" fill="#ffffff" fillOpacity={0.0} />
+              <Area type="monotone" dataKey="confidenceUpper" name="Upper 95%" stroke="none" fill="#1a73e8" fillOpacity={0.08} />
+              <Area type="monotone" dataKey="confidenceLower" name="Lower 95%" stroke="none" fill="#ffffff" fillOpacity={0} />
               
-              <Line type="monotone" dataKey="actualCost" name="Actual Daily Spend" stroke="#3b82f6" strokeWidth={3} dot={{ r: 3 }} />
-              <Line type="monotone" dataKey="forecastCost" name="Prophet Forecasted Spend" stroke="#6366f1" strokeWidth={2.5} strokeDasharray="5 5" />
+              <Line type="monotone" dataKey="actualCost" name="Actual" stroke="#1a73e8" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="forecastCost" name="Prophet forecast" stroke="#5f6368" strokeWidth={2} strokeDasharray="4 4" dot={false} />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
@@ -182,44 +167,29 @@ export const CostForecastPage: React.FC = () => {
           subtitle="SHAP feature attribution explaining key factors behind recent cost growth"
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
-          <div className="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-200 dark:border-slate-800">
-            <div className="flex items-center gap-2 text-rose-500 font-bold text-xs">
-              <ArrowUpRight className="w-4 h-4" />
-              <span>EC2 Provisioning Spikes (+18.5%)</span>
-            </div>
-            <p className="text-xs text-slate-600 dark:text-slate-300 mt-2">
-              Un-scaled <code className="text-indigo-400">c5.4xlarge</code> nodes in ap-south-1 running post-load test without AutoScaling scale-down.
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
+          <div className="p-3 rounded-[4px] border border-[var(--cs-line)] bg-[var(--cs-muted)]">
+            <p className="text-[12px] font-medium text-[var(--cs-crit)]">EC2 provisioning (+18.5%)</p>
+            <p className="text-[12px] text-[var(--cs-ink-3)] mt-1.5 leading-relaxed">
+              Unscaled <code className="font-mono text-[11px]">c5.4xlarge</code> nodes in ap-south-1 after a load test without scale-down.
             </p>
           </div>
-
-          <div className="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-200 dark:border-slate-800">
-            <div className="flex items-center gap-2 text-rose-500 font-bold text-xs">
-              <ArrowUpRight className="w-4 h-4" />
-              <span>EBS GP2 Storage Surcharge (+12.1%)</span>
-            </div>
-            <p className="text-xs text-slate-600 dark:text-slate-300 mt-2">
-              42-day unattached orphan GP2 volume <code className="text-indigo-400">vol-0941fca8291a104</code> incurring $215/month idle charges.
+          <div className="p-3 rounded-[4px] border border-[var(--cs-line)] bg-[var(--cs-muted)]">
+            <p className="text-[12px] font-medium text-[var(--cs-crit)]">EBS GP2 surcharge (+12.1%)</p>
+            <p className="text-[12px] text-[var(--cs-ink-3)] mt-1.5 leading-relaxed">
+              Unattached volume <code className="font-mono text-[11px]">vol-0941fca8291a104</code> idle for 42 days ($215/mo).
             </p>
           </div>
-
-          <div className="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-200 dark:border-slate-800">
-            <div className="flex items-center gap-2 text-emerald-500 font-bold text-xs">
-              <Sparkles className="w-4 h-4" />
-              <span>RDS Rightsizing Benefit (-6.4%)</span>
-            </div>
-            <p className="text-xs text-slate-600 dark:text-slate-300 mt-2">
-              Executed RDS read-replica rightsizing (<code className="text-emerald-400">db.r5.xlarge</code>) saving $640/month.
+          <div className="p-3 rounded-[4px] border border-[var(--cs-line)] bg-[var(--cs-muted)]">
+            <p className="text-[12px] font-medium text-[var(--cs-ok)]">RDS rightsizing (−6.4%)</p>
+            <p className="text-[12px] text-[var(--cs-ink-3)] mt-1.5 leading-relaxed">
+              Read-replica resized from <code className="font-mono text-[11px]">db.r5.xlarge</code>, saving $640/month.
             </p>
           </div>
-
-          <div className="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-200 dark:border-slate-800">
-            <div className="flex items-center gap-2 text-amber-500 font-bold text-xs">
-              <AlertCircle className="w-4 h-4" />
-              <span>NAT Gateway Cross-AZ Egress</span>
-            </div>
-            <p className="text-xs text-slate-600 dark:text-slate-300 mt-2">
-              12.4 TB S3 data transfer traversing public NAT gateway due to missing VPC Gateway Endpoint.
+          <div className="p-3 rounded-[4px] border border-[var(--cs-line)] bg-[var(--cs-muted)]">
+            <p className="text-[12px] font-medium text-[var(--cs-warn)]">NAT Gateway cross-AZ egress</p>
+            <p className="text-[12px] text-[var(--cs-ink-3)] mt-1.5 leading-relaxed">
+              12.4 TB S3 transfer over a public NAT gateway because a VPC gateway endpoint is missing.
             </p>
           </div>
         </div>

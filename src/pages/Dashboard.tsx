@@ -95,7 +95,7 @@ export const Dashboard: React.FC = () => {
         }
       />
 
-      <div className="border border-[var(--cs-line)] rounded-lg bg-white/80 p-4 flex flex-col sm:flex-row sm:items-start gap-3 border-l-4 border-l-[#7eb6ff]">
+      <div className="bg-[var(--cs-surface)] border border-[var(--cs-line)] rounded-lg cs-shadow p-4 flex flex-col sm:flex-row sm:items-start gap-3">
         <div className="flex-1 min-w-0">
           <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-[var(--cs-ink-3)]">Insight</p>
           <p className="mt-1 text-[14px] leading-6 text-[var(--cs-ink)]">{summary.aiInsight}</p>
@@ -112,7 +112,7 @@ export const Dashboard: React.FC = () => {
       </div>
 
       {dowAnomaly && (
-        <div className="border border-[var(--cs-crit)]/30 bg-[var(--cs-crit-soft)] rounded-lg p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 border-l-4 border-l-[#f9a8d4]">
+        <div className="border border-[var(--cs-line)] bg-[var(--cs-crit-soft)] rounded-lg cs-shadow p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>
             <p className="text-[14px] font-medium text-[var(--cs-crit)]">Potential DoW activity detected</p>
             <p className="text-[13px] text-[var(--cs-ink-2)] mt-0.5">
@@ -134,7 +134,6 @@ export const Dashboard: React.FC = () => {
           deltaTone={summary.spendTrendPercent > 0 ? 'bad' : 'good'}
           hint="Selected account, period"
           icon={<DollarSign className="w-4 h-4" />}
-          accent="#7eb6ff"
           spark={[18, 20, 19, 22, 24, 23, 26]}
           onClick={() => navigate('/cost')}
         />
@@ -143,7 +142,6 @@ export const Dashboard: React.FC = () => {
           value={`$${summary.forecastSpend.toLocaleString()}`}
           hint="Prophet month-end projection"
           icon={<TrendingUp className="w-4 h-4" />}
-          accent="#c4b5fd"
           onClick={() => navigate('/cost')}
         />
         <MetricCard
@@ -152,7 +150,6 @@ export const Dashboard: React.FC = () => {
           delta="Actionable recommendations"
           deltaTone="good"
           icon={<Lightbulb className="w-4 h-4" />}
-          accent="#7dd3c7"
           onClick={() => navigate('/recommendations')}
         />
         <MetricCard
@@ -160,7 +157,6 @@ export const Dashboard: React.FC = () => {
           value={String(summary.activeAnomaliesCount)}
           hint="Includes potential DoW flags"
           icon={<ShieldAlert className="w-4 h-4" />}
-          accent="#f9a8d4"
           onClick={() => navigate('/anomalies')}
         />
         <MetricCard
@@ -168,7 +164,6 @@ export const Dashboard: React.FC = () => {
           value={String(summary.pendingApprovalsCount)}
           hint="Human-in-the-loop queue"
           icon={<CheckSquare className="w-4 h-4" />}
-          accent="#c4b5fd"
           onClick={() => navigate('/approvals')}
         />
         <MetricCard
@@ -176,7 +171,6 @@ export const Dashboard: React.FC = () => {
           value={String(summary.healthyResourceCount)}
           hint={`${summary.underutilizedResourceCount + summary.idleResourceCount} idle or underused`}
           icon={<Server className="w-4 h-4" />}
-          accent="#7dd3c7"
           onClick={() => navigate('/resources')}
         />
       </div>
@@ -214,8 +208,8 @@ export const Dashboard: React.FC = () => {
                   type="monotone"
                   dataKey="actualCost"
                   name="Actual"
-                  stroke="#7eb6ff"
-                  fill="#7eb6ff"
+                  stroke="#1a73e8"
+                  fill="#1a73e8"
                   fillOpacity={0.12}
                   strokeWidth={2}
                 />
@@ -245,7 +239,7 @@ export const Dashboard: React.FC = () => {
           <CardHeader title="Where spend sits" subtitle="Top services this period" />
           <div className="space-y-3">
             {breakdown.map((item, i) => {
-              const colors = ['#7eb6ff', '#f9a8d4', '#c4b5fd', '#7dd3c7', '#93c5fd', '#fbcfe8'];
+              const colors = ['#1a73e8', '#c5221f', '#b06000', '#137333', '#5f6368', '#174ea6'];
               return (
               <div key={item.name}>
                 <div className="flex items-center justify-between text-[13px]">

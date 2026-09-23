@@ -370,3 +370,30 @@
     animation: none;
   }
 }
+
+.cs-console-preview {
+  border: 1px solid var(--cs-line);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--cs-surface);
+  box-shadow: var(--cs-shadow-md);
+}
+
+.cs-console-line {
+  stroke-dasharray: 420;
+  stroke-dashoffset: 420;
+  animation: cs-console-draw 2.4s ease-out forwards;
+}
+
+@keyframes cs-console-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cs-console-line {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}

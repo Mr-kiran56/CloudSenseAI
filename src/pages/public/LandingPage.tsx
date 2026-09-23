@@ -11,6 +11,7 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { GoogleDots } from '../../components/brand/GoogleDots';
+import { ConsolePreview } from '../../components/visual/ConsolePreview';
 
 const capabilities = [
   {
@@ -52,7 +53,8 @@ export const LandingPage: React.FC = () => {
   return (
     <div>
       <section className="bg-[var(--cs-surface)] border-b border-[var(--cs-line)]">
-        <div className="mx-auto max-w-[1120px] px-4 py-16 md:py-20">
+        <div className="mx-auto max-w-[1120px] px-4 py-16 md:py-20 grid lg:grid-cols-[1fr_minmax(280px,420px)] gap-10 lg:gap-12 items-center">
+          <div>
           <GoogleDots size="md" />
           <p className="mt-3 text-[12px] font-medium uppercase tracking-[0.08em] text-[var(--cs-ink-3)]">
             FinOps · SecOps · Explainable AI
@@ -85,6 +87,8 @@ export const LandingPage: React.FC = () => {
           <p className="mt-4 text-[12px] text-[var(--cs-ink-3)]">
             Console currently runs on labeled demo data. AWS credentials are never stored in the browser.
           </p>
+          </div>
+          <ConsolePreview />
         </div>
       </section>
 
