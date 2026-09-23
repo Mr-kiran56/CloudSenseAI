@@ -1,0 +1,152 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: "Roboto Mono", "SFMono-Regular", ui-monospace, monospace;
+  --color-brand: #1a73e8;
+  --color-brand-hover: #1557b0;
+  --color-brand-soft: #e8f0fe;
+  --color-ink: #202124;
+  --color-muted: #5f6368;
+  --color-line: #dadce0;
+  --color-canvas: #f8f9fa;
+  --color-ok: #137333;
+  --color-warn: #b06000;
+  --color-crit: #c5221f;
+}
+
+@layer base {
+  :root {
+    --cs-bg: #f8f9fa;
+    --cs-surface: #ffffff;
+    --cs-elevated: #ffffff;
+    --cs-muted: #f1f3f4;
+    --cs-line: #dadce0;
+    --cs-line-strong: #bdc1c6;
+    --cs-ink: #202124;
+    --cs-ink-2: #3c4043;
+    --cs-ink-3: #5f6368;
+    --cs-brand: #1a73e8;
+    --cs-brand-hover: #1557b0;
+    --cs-brand-soft: #e8f0fe;
+    --cs-ok: #137333;
+    --cs-ok-soft: #e6f4ea;
+    --cs-warn: #b06000;
+    --cs-warn-soft: #fef7e0;
+    --cs-crit: #c5221f;
+    --cs-crit-soft: #fce8e6;
+    --cs-shadow: 0 1px 2px 0 rgb(60 64 67 / 0.18), 0 1px 3px 1px rgb(60 64 67 / 0.08);
+    --cs-shadow-md: 0 1px 3px 0 rgb(60 64 67 / 0.2), 0 4px 8px 3px rgb(60 64 67 / 0.1);
+    --header-h: 56px;
+    --sidebar-w: 256px;
+    --sidebar-w-collapsed: 72px;
+  }
+
+  .dark {
+    --cs-bg: #202124;
+    --cs-surface: #292a2d;
+    --cs-elevated: #303134;
+    --cs-muted: #3c4043;
+    --cs-line: #3c4043;
+    --cs-line-strong: #5f6368;
+    --cs-ink: #e8eaed;
+    --cs-ink-2: #dadce0;
+    --cs-ink-3: #9aa0a6;
+    --cs-brand: #8ab4f8;
+    --cs-brand-hover: #aecbfa;
+    --cs-brand-soft: #174ea6;
+    --cs-ok: #81c995;
+    --cs-ok-soft: #0d652d;
+    --cs-warn: #fdd663;
+    --cs-warn-soft: #614a00;
+    --cs-crit: #f28b82;
+    --cs-crit-soft: #8c1d18;
+    --cs-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.4);
+    --cs-shadow-md: 0 4px 12px rgb(0 0 0 / 0.45);
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    background: var(--cs-bg);
+    color: var(--cs-ink);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  * {
+    border-color: var(--cs-line);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--cs-brand);
+    outline-offset: 2px;
+  }
+
+  button,
+  a,
+  [role="button"] {
+    min-height: 0;
+  }
+}
+
+@layer utilities {
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+
+  .cs-shadow {
+    box-shadow: var(--cs-shadow);
+  }
+
+  .cs-shadow-md {
+    box-shadow: var(--cs-shadow-md);
+  }
+}
+
+/* Scrollbars — quiet, not decorative */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--cs-line-strong);
+  border: 2px solid var(--cs-bg);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@keyframes cs-shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.cs-skeleton {
+  background: linear-gradient(90deg, var(--cs-muted) 0%, var(--cs-line) 50%, var(--cs-muted) 100%);
+  background-size: 800px 100%;
+  animation: cs-shimmer 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
