@@ -22,12 +22,14 @@ export interface AWSAccount {
   accountId: string;
   name: string;
   alias: string;
-  env: 'production' | 'staging' | 'dev' | 'qa';
+  env: 'production' | 'staging' | 'dev' | 'qa' | 'demo';
   region: string;
-  status: 'connected' | 'syncing' | 'error' | 'disconnected';
+  status: 'connected' | 'syncing' | 'error' | 'disconnected' | 'degraded';
   lastSync: string;
   resourceCount: number;
   monthlySpend: number;
+  isDemo?: boolean;
+  roleArn?: string;
 }
 
 export interface DashboardSummary {
@@ -79,6 +81,7 @@ export interface UnitEconomicsMetric {
   kpiGrowthPercent: number;
   efficiencyRatio: number;
   shapFeatures: ShapFeature[];
+  recommendedAction?: string;
 }
 
 export type ResourceService = 'EC2' | 'EBS' | 'RDS' | 'Lambda' | 'S3' | 'AutoScaling' | 'ElastiCache' | 'NATGateway';
@@ -247,12 +250,17 @@ export interface Notification {
 export interface Integration {
   id: string;
   name: string;
-  type: 'slack' | 'teams' | 'discord' | 'email' | 'webhook' | 'pagerduty';
+  type: 'slack' | 'teams' | 'discord' | 'email' | 'webhook' | 'pagerduty' | 'aws_sns';
   status: 'connected' | 'disconnected' | 'error' | 'pending';
-  iconName: string;
-  description: string;
-  lastEventAt: string;
+  iconName?: string;
+  description?: string;
+  channel?: string;
+  lastEventAt?: string;
+  lastEvent?: string;
+  eventsForwarded?: number;
   webhookUrl?: string;
+  autoNotifyAnomalies?: boolean;
+  autoNotifyApprovals?: boolean;
 }
 
 export interface AssistantMessage {

@@ -88,24 +88,20 @@ export const Topbar: React.FC = () => {
         >
           <Menu className="w-5 h-5" />
         </button>
+
         <GoogleDots />
 
         <button
           onClick={() => setCommandPaletteOpen(true)}
-          className="flex items-center gap-2 h-9 px-3 bg-[var(--cs-muted)] hover:bg-[var(--cs-line)] rounded-[4px] text-[var(--cs-ink-3)] text-[13px] w-[min(100%,280px)] sm:w-72"
+          className="flex items-center gap-2 h-9 px-3 bg-[var(--cs-muted)] hover:bg-[var(--cs-line)] rounded-[6px] text-[var(--cs-ink-3)] text-[13px] w-[min(100%,280px)] sm:w-72 border border-[var(--cs-line)] transition"
         >
-          <Search className="w-4 h-4 shrink-0" />
-          <span className="truncate flex-1 text-left">Search this workspace</span>
+          <Search className="w-4 h-4 shrink-0 text-[var(--cs-ink-3)]" />
+          <span className="truncate flex-1 text-left text-[var(--cs-ink-2)]">Search this workspace</span>
           <Kbd>Ctrl K</Kbd>
         </button>
       </div>
 
-      <div className="flex items-center gap-1.5 text-[13px]">
-        <div className="hidden md:flex items-center gap-1.5 h-8 px-2.5 rounded-[4px] bg-[var(--cs-ok-soft)] text-[var(--cs-ok)]">
-          <span className="w-1.5 h-1.5 rounded-full bg-[var(--cs-ok)]" />
-          <span className="text-[12px] font-medium">Systems healthy</span>
-        </div>
-
+      <div className="flex items-center gap-2 text-[13px]">
         <div className="relative hidden sm:block">
           <button
             onClick={() => {
@@ -117,7 +113,7 @@ export const Topbar: React.FC = () => {
             className="flex items-center gap-1.5 h-8 px-2 rounded-[4px] hover:bg-[var(--cs-muted)] text-[var(--cs-ink-2)]"
           >
             <Cloud className="w-3.5 h-3.5 text-[var(--cs-brand)]" />
-            <span className="truncate max-w-[120px]">{selectedAccount.alias}</span>
+            <span className="truncate max-w-[120px]">{selectedAccount?.alias || selectedAccount?.name || 'Account'}</span>
             <ChevronDown className="w-3 h-3 text-[var(--cs-ink-3)]" />
           </button>
           {isAccountOpen && (
@@ -136,7 +132,7 @@ export const Topbar: React.FC = () => {
                     <span className="block text-[var(--cs-ink)]">{acc.name}</span>
                     <span className="block text-[11px] font-mono text-[var(--cs-ink-3)]">{acc.accountId}</span>
                   </span>
-                  {acc.id === selectedAccount.id && <Check className="w-3.5 h-3.5 text-[var(--cs-brand)]" />}
+                  {acc.id === selectedAccount?.id && <Check className="w-3.5 h-3.5 text-[var(--cs-brand)]" />}
                 </button>
               ))}
             </div>
@@ -191,7 +187,7 @@ export const Topbar: React.FC = () => {
             title="Role hiding is UI-only. The backend must enforce authorization."
           >
             <Shield className="w-3.5 h-3.5" />
-            <span className="capitalize">{user.role.replace('_', ' ')}</span>
+            <span className="capitalize">{(user?.role || 'admin').replace('_', ' ')}</span>
             <ChevronDown className="w-3 h-3 text-[var(--cs-ink-3)]" />
           </button>
           {isRoleOpen && (
@@ -207,7 +203,7 @@ export const Topbar: React.FC = () => {
                   className="w-full flex items-center justify-between px-3 py-2 text-left hover:bg-[var(--cs-muted)] text-[13px]"
                 >
                   {r.label}
-                  {r.id === user.role && <Check className="w-3.5 h-3.5 text-[var(--cs-brand)]" />}
+                  {r.id === user?.role && <Check className="w-3.5 h-3.5 text-[var(--cs-brand)]" />}
                 </button>
               ))}
             </div>
@@ -244,7 +240,7 @@ export const Topbar: React.FC = () => {
             aria-label="Account menu"
           >
             <img
-              src={user.avatar}
+              src={user?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'}
               alt=""
               className="w-8 h-8 rounded-full object-cover border border-[var(--cs-line)]"
             />
@@ -252,8 +248,8 @@ export const Topbar: React.FC = () => {
           {isProfileOpen && (
             <div className={menuCls + ' w-64'}>
               <div className="px-3 py-2.5 border-b border-[var(--cs-line)]">
-                <p className="font-medium text-[var(--cs-ink)]">{user.name}</p>
-                <p className="text-[12px] text-[var(--cs-ink-3)] truncate">{user.email}</p>
+                <p className="font-medium text-[var(--cs-ink)]">{user?.name || 'Administrator'}</p>
+                <p className="text-[12px] text-[var(--cs-ink-3)] truncate">{user?.email || 'admin@cloudsense.ai'}</p>
               </div>
               <Link to="/settings/profile" className="flex items-center gap-2 px-3 py-2 hover:bg-[var(--cs-muted)] text-[13px]">
                 <User className="w-3.5 h-3.5" /> Profile

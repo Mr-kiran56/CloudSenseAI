@@ -1,0 +1,24 @@
+{
+  "rows": 25920,
+  "start": "2026-06-01 00:00:00",
+  "end": "2026-08-29 23:55:00",
+  "negatives": 0,
+  "nan_by_col": {
+    "cpu_utilization": 53,
+    "memory_utilization_pct": 53
+  },
+  "optional_present": [
+    "unique_ips",
+    "top_ip_share",
+    "geo_entropy_bits",
+    "avg_function_duration_ms",
+    "lambda_concurrency_max",
+    "error_5xx_rate",
+    "p95_latency_ms",
+    "memory_utilization_pct",
+    "instance_count",
+    "cal_promo_intensity",
+    "cal_is_holiday",
+    "cal_scheduled_job"
+  ]
+}

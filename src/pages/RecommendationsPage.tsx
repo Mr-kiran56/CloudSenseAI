@@ -98,7 +98,7 @@ export const RecommendationsPage: React.FC = () => {
                     +${rec.monthlySavings}/mo
                   </span>
                   <span className="text-[10px] text-slate-400 block font-mono">
-                    (${rec.annualSavings.toLocaleString()}/yr)
+                    (${Number(rec.annualSavings || (rec.monthlySavings ? rec.monthlySavings * 12 : 0)).toLocaleString()}/yr)
                   </span>
                 </div>
 

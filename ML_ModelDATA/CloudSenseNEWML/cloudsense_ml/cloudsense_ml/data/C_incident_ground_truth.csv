@@ -1,0 +1,25 @@
+incident_id,type,label,label_source,start,end,n_windows,split
+INC001,deploy_regression,operational_anomaly,synthetic_injection,2026-07-09 10:35:00,2026-07-09 12:20:00,21,train
+INC002,node_failure_churn,operational_anomaly,synthetic_injection,2026-07-22 05:00:00,2026-07-22 05:40:00,8,train
+INC003,log_storage_bloat,operational_anomaly,synthetic_injection,2026-06-22 10:15:00,2026-06-22 12:15:00,24,train
+INC004,retry_storm,operational_anomaly,synthetic_injection,2026-07-02 03:00:00,2026-07-02 04:20:00,16,train
+INC005,api_hammering,dow_candidate,synthetic_injection,2026-06-05 01:45:00,2026-06-05 04:40:00,35,train
+INC006,deploy_regression,operational_anomaly,synthetic_injection,2026-08-07 07:50:00,2026-08-07 08:55:00,13,val
+INC007,cpu_memory_leak,operational_anomaly,synthetic_injection,2026-07-31 07:45:00,2026-07-31 11:35:00,46,val
+INC008,orphaned_idle_fleet,operational_anomaly,synthetic_injection,2026-07-27 06:50:00,2026-07-27 13:25:00,79,val
+INC009,retry_storm,operational_anomaly,synthetic_injection,2026-08-01 09:50:00,2026-08-01 11:20:00,18,val
+INC010,serverless_invocation_flood,dow_candidate,synthetic_injection,2026-08-03 10:30:00,2026-08-03 12:20:00,22,val
+INC011,provisioning_abuse,dow_candidate,synthetic_injection,2026-08-05 10:30:00,2026-08-05 11:30:00,12,val
+INC012,real_trace_replay_serverless_bot,dow_confirmed,real_trace_replay,2026-08-04 02:00:00,2026-08-04 05:05:00,37,val
+INC013,deploy_regression,operational_anomaly,synthetic_injection,2026-08-16 04:35:00,2026-08-16 05:10:00,7,test
+INC014,cpu_memory_leak,operational_anomaly,synthetic_injection,2026-08-21 01:40:00,2026-08-21 07:10:00,66,test
+INC015,node_failure_churn,operational_anomaly,synthetic_injection,2026-08-18 05:50:00,2026-08-18 07:15:00,17,test
+INC016,log_storage_bloat,operational_anomaly,synthetic_injection,2026-08-13 03:05:00,2026-08-13 05:25:00,28,test
+INC017,orphaned_idle_fleet,operational_anomaly,synthetic_injection,2026-08-20 09:40:00,2026-08-20 14:00:00,52,test
+INC018,serverless_invocation_flood,dow_candidate,synthetic_injection,2026-08-19 06:15:00,2026-08-19 09:10:00,35,test
+INC019,api_hammering,dow_candidate,synthetic_injection,2026-08-14 09:50:00,2026-08-14 12:50:00,36,test
+INC020,provisioning_abuse,dow_candidate,synthetic_injection,2026-08-15 03:05:00,2026-08-15 04:45:00,20,test
+INC021,slow_ramp_low_and_slow,dow_candidate,synthetic_injection,2026-08-17 10:30:00,2026-08-17 16:35:00,73,test
+INC022,egress_abuse,dow_candidate,synthetic_injection,2026-08-22 08:45:00,2026-08-22 10:35:00,22,test
+INC023,real_trace_replay_serverless_bot,dow_confirmed,real_trace_replay,2026-08-23 11:00:00,2026-08-23 14:05:00,37,test
+INC024,real_trace_replay_serverless_bot,dow_confirmed,real_trace_replay,2026-08-26 02:15:00,2026-08-26 05:20:00,37,test

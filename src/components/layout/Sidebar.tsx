@@ -19,6 +19,7 @@ import {
   Settings,
   HelpCircle,
   PanelLeft,
+  Database,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useApp } from '../../context/AppContext';
@@ -57,6 +58,7 @@ export const Sidebar: React.FC = () => {
         { name: 'Resources', path: '/resources', icon: <Server className="w-4 h-4" /> },
         { name: 'Recommendations', path: '/recommendations', icon: <Lightbulb className="w-4 h-4" />, badge: 4 },
         { name: 'Anomalies & DoW', path: '/anomalies', icon: <ShieldAlert className="w-4 h-4" />, badge: '2' },
+        { name: 'Data & Model Lab', path: '/synthesis-lab', icon: <Database className="w-4 h-4" />, badge: 'ML' },
       ],
     },
     {

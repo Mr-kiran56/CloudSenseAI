@@ -1,0 +1,10 @@
+{
+ "01_balance_timeline": "Class balance and incidents",
+ "02_daily_cycle": "Daily cycle (normal windows)",
+ "03_benign_vs_attack": "Benign look-alikes vs attacks",
+ "04_pca": "PCA coloured by label",
+ "05_corr": "Feature redundancy",
+ "06_incident_panels": "Per-incident behaviour of the nine spec features",
+ "13_pr_curves": "PR curves",
+ "14_shap_alerts": "SHAP on alerted test windows"
+}

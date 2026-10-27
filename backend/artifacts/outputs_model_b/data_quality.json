@@ -1,0 +1,42 @@
+{
+  "rows": 8032,
+  "services": [
+    "analytics",
+    "auth",
+    "cart_checkout",
+    "catalog",
+    "media",
+    "notifications",
+    "payments",
+    "search"
+  ],
+  "date_range": [
+    "2024-01-01",
+    "2026-09-30"
+  ],
+  "negatives": 0,
+  "cpu_over_100": 0,
+  "zero_requests": 0,
+  "zero_users": 0,
+  "zero_transactions_share": 0.75,
+  "cpu_nan": 30,
+  "date_gaps": {
+    "analytics": 0,
+    "auth": 0,
+    "cart_checkout": 0,
+    "catalog": 0,
+    "media": 0,
+    "notifications": 0,
+    "payments": 0,
+    "search": 0
+  },
+  "optional_columns_present": [
+    "instance_count_avg",
+    "instance_count_max",
+    "cpu_p95",
+    "mem_avg",
+    "ebs_provisioned_gb",
+    "is_promo",
+    "is_holiday"
+  ]
+}

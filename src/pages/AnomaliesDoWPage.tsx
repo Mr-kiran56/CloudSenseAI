@@ -5,12 +5,25 @@ import { Badge } from '../components/ui/Badge';
 import { Skeleton } from '../components/ui/Skeleton';
 import { apiService } from '../services/api';
 import { Anomaly } from '../types';
-import { ShieldAlert, Zap, Clock, CheckCircle2, AlertTriangle, ArrowUpRight, Activity, ShieldCheck } from 'lucide-react';
+import {
+  ShieldAlert,
+  Zap,
+  Clock,
+  CheckCircle2,
+  AlertTriangle,
+  ArrowUpRight,
+  Activity,
+  ShieldCheck,
+  Database,
+  Play,
+} from 'lucide-react';
 import { PageHeader } from '../components/ui/PageHeader';
 import { useApp } from '../context/AppContext';
+import { useNavigate } from 'react-router-dom';
 
 export const AnomaliesDoWPage: React.FC = () => {
   const { addToast } = useApp();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [anomalies, setAnomalies] = useState<Anomaly[]>([]);
 
@@ -35,42 +48,44 @@ export const AnomaliesDoWPage: React.FC = () => {
   const costAnomalies = anomalies.filter((a) => a.type === 'cost_anomaly');
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-sans">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-slate-200 dark:border-slate-800">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-[var(--cs-line)]">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-[22px] font-normal tracking-tight text-[var(--cs-ink)]">
+            <h1 className="text-2xl font-bold tracking-tight text-[var(--cs-ink)]">
               Anomalies & Denial-of-Wallet (DoW) Command Center
             </h1>
-            <Badge variant="critical" icon>Isolation Forest Anomaly Model</Badge>
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Real-time financial vulnerability detection, request rate spikes, cost velocity alerts & mitigation timelines
+          <p className="text-xs text-[var(--cs-ink-3)] mt-1">
+            Real-time financial vulnerability detection, 5-minute request rate spikes, cost velocity alerts & MCP mitigation.
           </p>
         </div>
       </div>
 
       {/* Denial-of-Wallet (DoW) Alert Workspace */}
       <div className="space-y-4">
-        <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2 uppercase tracking-wider">
+        <h2 className="text-xs font-bold text-[var(--cs-ink)] flex items-center gap-2 uppercase tracking-wider">
           <ShieldAlert className="w-4 h-4 text-rose-500" />
-          <span>Denial-of-Wallet (DoW) Threat Detections</span>
+          <span>Active Denial-of-Wallet (DoW) Threat Incidents</span>
         </h2>
 
         {dowAlerts.map((dow) => (
-          <Card key={dow.id} className="border-l-4 border-l-rose-600 dark:border-l-rose-500">
-            <div className="space-y-4">
+          <Card key={dow.id} className="border-l-4 border-l-rose-500 cs-shadow p-6">
+            <div className="space-y-5">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                   <div className="flex items-center gap-2 text-xs">
-                    <Badge variant="critical" icon>DoW Threat Flagged</Badge>
+                    <Badge variant="critical">DoW Candidate (Model C)</Badge>
                     <Badge variant="ai">Confidence: {Math.round(dow.confidence * 100)}%</Badge>
-                    <span className="text-[11px] font-mono text-slate-400">{dow.detectedAt}</span>
+                    <span className="text-[11px] font-mono text-[var(--cs-ink-3)]">{dow.detectedAt}</span>
                   </div>
-                  <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 mt-1">
+                  <h3 className="text-lg font-bold text-[var(--cs-ink)] mt-1.5">
                     {dow.title}
                   </h3>
+                  <p className="text-xs font-mono text-[var(--cs-ink-3)] mt-0.5">
+                    Target: {dow.resourceId}
+                  </p>
                 </div>
 
                 <Button
@@ -80,34 +95,37 @@ export const AnomaliesDoWPage: React.FC = () => {
                     addToast({
                       type: 'warning',
                       title: 'WAF Rate-Limiting Policy Dispatched',
-                      message: 'Submitted automated WAF rule update to backend execution queue.',
+                      message: 'Submitted automated WAF rule update to MCP remediation queue.',
                     })
                   }
                 >
-                  Apply WAF Throttle Mitigation
+                  Deploy WAF Throttle Mitigation
                 </Button>
               </div>
 
               {/* Empirical Metrics Bar */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-200 dark:border-slate-800 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-[var(--cs-muted)]/60 rounded-xl border border-[var(--cs-line)] text-xs font-mono">
                 <div>
-                  <span className="text-slate-400 block text-[10px] font-mono">COST VELOCITY</span>
-                  <span className="font-mono font-bold text-rose-600 dark:text-rose-400">{dow.costVelocity}</span>
+                  <span className="text-[var(--cs-ink-3)] block text-[10px] uppercase font-semibold">COST VELOCITY</span>
+                  <span className="text-base font-bold text-rose-500 dark:text-rose-400">{dow.costVelocity}</span>
+                  <span className="text-[10px] text-[var(--cs-ink-3)] block">Baseline: +0.02%/15m</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[10px] font-mono">REQUEST RATE SPIKE</span>
-                  <span className="font-mono font-bold text-slate-900 dark:text-slate-100">{dow.requestRateChange}</span>
+                  <span className="text-[var(--cs-ink-3)] block text-[10px] uppercase font-semibold">REQUEST RATE SPIKE</span>
+                  <span className="text-base font-bold text-[var(--cs-ink)]">{dow.requestRateChange}</span>
+                  <span className="text-[10px] text-[var(--cs-ink-3)] block">Zero order completions</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[10px] font-mono">CONCURRENCY SATURATION</span>
-                  <span className="font-mono font-bold text-amber-500">{dow.provisioningSpike}</span>
+                  <span className="text-[var(--cs-ink-3)] block text-[10px] uppercase font-semibold">CONCURRENCY SATURATION</span>
+                  <span className="text-base font-bold text-amber-500 dark:text-amber-400">{dow.provisioningSpike}</span>
+                  <span className="text-[10px] text-[var(--cs-ink-3)] block">Near unreserved pool cap</span>
                 </div>
               </div>
 
               {/* Evidence Log List */}
-              <div className="space-y-1 text-xs">
-                <span className="font-bold text-slate-800 dark:text-slate-200">Isolation Forest Evidence Trail:</span>
-                <ul className="list-disc pl-5 text-slate-600 dark:text-slate-300 space-y-1 text-[11px]">
+              <div className="space-y-2 text-xs">
+                <span className="font-bold text-[var(--cs-ink)] uppercase tracking-wider text-[11px]">Isolation Forest Evidence Trail:</span>
+                <ul className="list-disc pl-5 text-[var(--cs-ink-2)] space-y-1 text-xs">
                   {dow.evidence.map((ev, i) => (
                     <li key={i}>{ev}</li>
                   ))}
@@ -115,25 +133,25 @@ export const AnomaliesDoWPage: React.FC = () => {
               </div>
 
               {/* Incident Resolution Timeline */}
-              <div className="pt-3 border-t border-slate-100 dark:border-slate-800">
-                <span className="font-semibold text-xs text-slate-900 dark:text-slate-100 block mb-3">
+              <div className="pt-4 border-t border-[var(--cs-line)]">
+                <span className="font-semibold text-xs text-[var(--cs-ink)] block mb-3 uppercase tracking-wider">
                   Incident Resolution Timeline
                 </span>
-                <div className="grid grid-cols-1 sm:grid-cols-5 gap-2 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
                   {dow.attackTimeline.map((step, idx) => (
                     <div
                       key={idx}
-                      className={`p-2.5 rounded-lg border text-center space-y-1 ${
+                      className={`p-3 rounded-xl border space-y-1 ${
                         step.status === 'completed'
-                          ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300'
+                          ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-700 dark:text-emerald-300'
                           : step.status === 'current'
-                          ? 'bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-300 font-bold'
-                          : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400'
+                          ? 'bg-amber-500/10 border-amber-500/30 text-amber-800 dark:text-amber-300 font-bold'
+                          : 'bg-[var(--cs-surface)] border-[var(--cs-line)] text-[var(--cs-ink-3)]'
                       }`}
                     >
-                      <div className="text-[10px] font-mono font-semibold uppercase">{step.step}</div>
-                      <div className="text-[9px] font-mono">{step.timestamp}</div>
-                      <div className="text-[10px] leading-tight">{step.description}</div>
+                      <div className="text-[10px] font-mono font-bold uppercase">{step.step}</div>
+                      <div className="text-[10px] font-mono text-[var(--cs-ink-3)]">{step.timestamp}</div>
+                      <div className="text-[11px] leading-tight text-[var(--cs-ink-2)] mt-1">{step.description}</div>
                     </div>
                   ))}
                 </div>
@@ -145,25 +163,29 @@ export const AnomaliesDoWPage: React.FC = () => {
 
       {/* General Cost Anomalies Workspace */}
       <div className="space-y-4 pt-4">
-        <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2 uppercase tracking-wider">
+        <h2 className="text-xs font-bold text-[var(--cs-ink)] flex items-center gap-2 uppercase tracking-wider">
           <Activity className="w-4 h-4 text-amber-500" />
-          <span>General Cost Velocity Anomalies</span>
+          <span>General Operational Cost Velocity Anomalies</span>
         </h2>
 
         {costAnomalies.map((anom) => (
-          <Card key={anom.id}>
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
-              <div className="space-y-1">
+          <Card key={anom.id} className="p-5 cs-shadow">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs">
+              <div className="space-y-1.5">
                 <div className="flex items-center gap-2">
                   <Badge variant="warning">Cost Velocity Anomaly</Badge>
-                  <span className="font-mono text-slate-400">{anom.detectedAt}</span>
+                  <span className="font-mono text-[var(--cs-ink-3)]">{anom.detectedAt}</span>
+                  <span className="text-[var(--cs-ink-3)]">&bull;</span>
+                  <span className="font-mono text-[var(--cs-ink-3)]">{anom.resourceId}</span>
                 </div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">{anom.title}</h3>
-                <p className="text-slate-500 dark:text-slate-400">
-                  Cost Velocity: <span className="font-mono font-bold text-amber-500">{anom.costVelocity}</span> • {anom.provisioningSpike}
+                <h3 className="text-base font-bold text-[var(--cs-ink)]">{anom.title}</h3>
+                <p className="text-[var(--cs-ink-2)]">
+                  Cost Velocity: <span className="font-mono font-bold text-amber-600 dark:text-amber-400">{anom.costVelocity}</span> &bull; {anom.provisioningSpike}
                 </p>
               </div>
-              <Button variant="outline" size="sm">Inspect Node Metrics</Button>
+              <Button variant="outline" size="sm" onClick={() => navigate('/resources')}>
+                Inspect Node Telemetry
+              </Button>
             </div>
           </Card>
         ))}

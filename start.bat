@@ -1,0 +1,3 @@
+@echo off
+echo Starting CloudSense AI Backend and Frontend simultaneously...
+npm start

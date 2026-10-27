@@ -32,8 +32,10 @@ import { ActivityAuditPage } from './pages/ActivityAuditPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { HelpDocsPage } from './pages/HelpDocsPage';
 import { PoliciesPage } from './pages/PoliciesPage';
+import { SynthesisLabPage } from './pages/SynthesisLabPage';
 import { SoftWashBackdrop } from './components/visual/SoftWashBackdrop';
 import { DesktopOnlyNotice } from './components/layout/DesktopOnlyNotice';
+import { ErrorBoundary } from './components/ui/ErrorBoundary';
 
 function AppRoutes() {
   return (
@@ -120,6 +122,18 @@ function AppRoutes() {
             <AnomaliesDoWPage />
           </ProtectedRoute>
         }
+      />
+      <Route
+        path="/synthesis-lab"
+        element={
+          <ProtectedRoute>
+            <SynthesisLabPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/data-lab"
+        element={<Navigate to="/synthesis-lab" replace />}
       />
       <Route
         path="/remediation"
@@ -232,17 +246,19 @@ function AppRoutes() {
 
 export function App() {
   return (
-    <AuthProvider>
-      <AppProvider>
-        <Router>
-          <SoftWashBackdrop />
-          <DesktopOnlyNotice />
-          <div className="relative z-[1] min-h-full">
-            <AppRoutes />
-          </div>
-        </Router>
-      </AppProvider>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <AppProvider>
+          <Router>
+            <SoftWashBackdrop />
+            <DesktopOnlyNotice />
+            <div className="relative z-[1] min-h-full">
+              <AppRoutes />
+            </div>
+          </Router>
+        </AppProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

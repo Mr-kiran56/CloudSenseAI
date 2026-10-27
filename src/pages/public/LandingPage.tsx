@@ -98,7 +98,7 @@ export const LandingPage: React.FC = () => {
           Built as a cloud intelligence command center for engineers, FinOps analysts, and administrators — not a
           generic analytics site.
         </p>
-        <ol className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-px bg-[var(--cs-line)] border border-[var(--cs-line)] rounded-lg overflow-hidden">
+        <ol className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-px bg-[var(--cs-line)] border border-[var(--cs-line)] rounded-lg overflow-hidden cs-shadow-md">
           {[
             'How much are we spending?',
             'What will we spend?',
@@ -107,7 +107,7 @@ export const LandingPage: React.FC = () => {
             'Why did the model flag it?',
             'What happens if we apply the change?',
           ].map((q, i) => (
-            <li key={q} className="bg-[var(--cs-surface)] p-4 text-[14px]">
+            <li key={q} className="bg-[var(--cs-surface)]/80 backdrop-blur-md p-4 text-[14px] transition-colors hover:bg-[var(--cs-surface)]/95">
               <span
                 className="font-mono text-[11px]"
                 style={{ color: ['#4285F4', '#EA4335', '#FBBC05', '#34A853', '#4285F4', '#34A853'][i] }}

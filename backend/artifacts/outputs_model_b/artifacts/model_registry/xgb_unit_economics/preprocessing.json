@@ -1,0 +1,234 @@
+{
+  "features": [
+    "active_users",
+    "api_requests",
+    "transactions",
+    "cpu_avg",
+    "network_bytes",
+    "provisioning_frequency",
+    "cost_usd",
+    "unit_cost_today",
+    "cpu_imputed",
+    "network_bytes_per_request",
+    "requests_per_user",
+    "time_lagged_spend_1d",
+    "time_lagged_spend_7d",
+    "unit_cost_lag1",
+    "unit_cost_lag7",
+    "cost_roll7_mean",
+    "cost_roll7_std",
+    "cost_roll28_mean",
+    "cost_roll28_std",
+    "req_roll7_mean",
+    "req_roll7_std",
+    "req_roll28_mean",
+    "req_roll28_std",
+    "unit_roll7_mean",
+    "unit_roll7_std",
+    "unit_roll28_mean",
+    "unit_roll28_std",
+    "req_pct_change_1d",
+    "cost_pct_change_1d",
+    "mtd_network_bytes",
+    "tier1_share_used",
+    "next_dow",
+    "next_day_of_month",
+    "days_to_month_end",
+    "next_is_weekend",
+    "next_is_month_end",
+    "instance_count_avg",
+    "requests_per_instance",
+    "users_per_instance",
+    "cpu_x_inst",
+    "inst_pct_change_1d",
+    "instance_count_max",
+    "cpu_p95",
+    "cpu_headroom",
+    "mem_avg",
+    "ebs_provisioned_gb",
+    "ebs_gb_per_instance",
+    "next_is_promo",
+    "next_is_holiday",
+    "service_code",
+    "instance_family_code",
+    "region_code",
+    "resource_tag_code"
+  ],
+  "state": {
+    "cpu_median": {
+      "analytics": 24.08,
+      "auth": 17.94,
+      "cart_checkout": 19.0,
+      "catalog": 23.13,
+      "media": 20.41,
+      "notifications": 15.01,
+      "payments": 9.11,
+      "search": 25.08
+    },
+    "cpu_global": 19.81,
+    "categories": {
+      "service": [
+        "analytics",
+        "auth",
+        "cart_checkout",
+        "catalog",
+        "media",
+        "notifications",
+        "payments",
+        "search"
+      ],
+      "instance_family": [
+        "c5.large",
+        "c5.xlarge",
+        "c6g.xlarge",
+        "m5.large",
+        "m6g.large",
+        "r5.large",
+        "r5.xlarge",
+        "t3.large"
+      ],
+      "region": [
+        "ap-south-1",
+        "ap-southeast-1"
+      ],
+      "resource_tag": [
+        "commerce",
+        "data",
+        "platform",
+        "storefront"
+      ]
+    },
+    "opt": [
+      "instance_count_avg",
+      "instance_count_max",
+      "cpu_p95",
+      "mem_avg",
+      "ebs_provisioned_gb",
+      "is_promo",
+      "is_holiday"
+    ],
+    "tier1_bytes": 10240000000000.0
+  },
+  "params": {
+    "max_depth": 6,
+    "learning_rate": 0.05,
+    "subsample": 0.8,
+    "colsample_bytree": 0.8,
+    "objective": "reg:squarederror",
+    "random_state": 42
+  },
+  "n_trees": 144,
+  "choice": "xgb_spec_params",
+  "split": {
+    "train_end": "2025-12-02",
+    "val_end": "2026-05-02"
+  },
+  "target_scale": 1000.0,
+  "cfg": {
+    "seed": 42,
+    "train_frac": 0.7,
+    "val_frac": 0.15,
+    "optuna_trials": 30,
+    "cv_train_fracs": [
+      0.5,
+      0.65,
+      0.8
+    ],
+    "cv_val_frac": 0.15,
+    "n_boot": 500,
+    "r2_guard": 0.999,
+    "tier1_bytes": 10240000000000.0,
+    "risk_medium_pct": 5.0,
+    "risk_high_pct": 15.0,
+    "per_txn_services": null
+  },
+  "target": "next-day cost per API request (USD); model works in USD per 1,000 requests",
+  "note": "model.json does not store training params; they are recorded here",
+  "versions": {
+    "python": "3.13.16",
+    "pandas": "2.2.3",
+    "numpy": "2.1.3"
+  },
+  "metrics_test": {
+    "naive_today": {
+      "split": "test",
+      "MAE": 0.0011711011720954613,
+      "RMSE": 0.002276323664620226,
+      "R2": 0.9880522375953431,
+      "MAPE": 4.738609397625299,
+      "sMAPE": 4.726553122615633
+    },
+    "naive_same_weekday": {
+      "split": "test",
+      "MAE": 0.001929223942466844,
+      "RMSE": 0.00416153700740522,
+      "R2": 0.96006753929303,
+      "MAPE": 6.863327817830199,
+      "sMAPE": 6.761476394952545
+    },
+    "linear_regression": {
+      "split": "test",
+      "MAE": 0.0014393485301739128,
+      "RMSE": 0.0023363820709419677,
+      "R2": 0.9874134623099486,
+      "MAPE": 7.384570227417174,
+      "sMAPE": 7.583722159129337
+    },
+    "ridge": {
+      "split": "test",
+      "MAE": 0.0014253866390794337,
+      "RMSE": 0.0023612111806062424,
+      "R2": 0.9871445224913746,
+      "MAPE": 7.174816782691535,
+      "sMAPE": 7.316504406969278
+    },
+    "random_forest": {
+      "split": "test",
+      "MAE": 0.0010479774327416388,
+      "RMSE": 0.0017393770442015993,
+      "R2": 0.9930240072742416,
+      "MAPE": 4.973483819954396,
+      "sMAPE": 4.843870671219666
+    },
+    "lightgbm": {
+      "split": "test",
+      "MAE": 0.0010484743970240326,
+      "RMSE": 0.0017482551521265785,
+      "R2": 0.9929526119698947,
+      "MAPE": 5.143347561017997,
+      "sMAPE": 5.013758901524828
+    },
+    "xgb_spec_params": {
+      "split": "test",
+      "MAE": 0.000996846795468821,
+      "RMSE": 0.0016237481698205749,
+      "R2": 0.9939206674590725,
+      "MAPE": 4.91233350753608,
+      "sMAPE": 4.786440986345339
+    },
+    "xgb_tuned": {
+      "split": "test",
+      "MAE": 0.0010338502339137504,
+      "RMSE": 0.001622219904981409,
+      "R2": 0.9939321057573205,
+      "MAPE": 5.511716429244771,
+      "sMAPE": 5.334028670271291
+    },
+    "xgb_tuned_per_service": {
+      "split": "test",
+      "MAE": 0.0015362271826573142,
+      "RMSE": 0.002061010899211634,
+      "R2": 0.9902055708773528,
+      "MAPE": 9.338652033269351,
+      "sMAPE": 8.72183239938636
+    },
+    "xgb_final_refit": {
+      "split": "test",
+      "MAE": 0.0009534175047405639,
+      "RMSE": 0.0016596288948693408,
+      "R2": 0.993649023206047,
+      "MAPE": 4.568538496939387,
+      "sMAPE": 4.4571275796913525
+    }
+  }
+}

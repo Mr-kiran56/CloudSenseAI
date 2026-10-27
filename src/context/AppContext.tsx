@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { AWSAccount } from '../types';
 import { mockAWSAccounts } from '../services/mockData';
+import { apiService } from '../services/api';
 
 export interface ToastItem {
   id: string;
@@ -13,6 +14,7 @@ interface AppContextType {
   selectedAccount: AWSAccount;
   setSelectedAccount: (acc: AWSAccount) => void;
   accounts: AWSAccount[];
+  refreshAccounts: () => Promise<void>;
   selectedRegion: string;
   setSelectedRegion: (region: string) => void;
   dateRange: string;
@@ -37,9 +39,9 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [accounts] = useState<AWSAccount[]>(mockAWSAccounts);
+  const [accounts, setAccounts] = useState<AWSAccount[]>(mockAWSAccounts);
   const [selectedAccount, setSelectedAccount] = useState<AWSAccount>(mockAWSAccounts[0]);
-  const [selectedRegion, setSelectedRegion] = useState<string>('ap-south-1');
+  const [selectedRegion, setSelectedRegion] = useState<string>('us-east-1');
   const [dateRange, setDateRange] = useState<string>('30d');
   const [theme, setThemeState] = useState<'dark' | 'light'>(() => {
     const saved = localStorage.getItem('cs_theme');
@@ -54,6 +56,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const isDemoData = true;
+
+  const refreshAccounts = useCallback(async () => {
+    try {
+      const res = await apiService.getAWSAccounts();
+      if (res && res.data && res.data.length > 0) {
+        setAccounts(res.data);
+        setSelectedAccount((prev) => {
+          const match = res.data.find((a) => a.id === prev.id || a.accountId === prev.accountId);
+          return match || res.data[0];
+        });
+      }
+    } catch (e) {
+      console.warn('Could not refresh cloud accounts:', e);
+    }
+  }, []);
+
+  useEffect(() => {
+    refreshAccounts();
+  }, [refreshAccounts]);
 
   const setSidebarCollapsed = (collapsed: boolean) => {
     setSidebarCollapsedState(collapsed);
@@ -106,6 +127,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         selectedAccount,
         setSelectedAccount,
         accounts,
+        refreshAccounts,
         selectedRegion,
         setSelectedRegion,
         dateRange,

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, NavLink, Outlet } from 'react-router-dom';
 import { Logo } from '../brand/Logo';
 import { GoogleDots } from '../brand/GoogleDots';
@@ -6,6 +6,17 @@ import { useAuth } from '../../context/AuthContext';
 
 export const PublicShell: React.FC = () => {
   const { isAuthenticated } = useAuth();
+
+  // Public marketing & research pages are strictly Google light mode
+  useEffect(() => {
+    document.documentElement.classList.remove('dark');
+    return () => {
+      const saved = localStorage.getItem('cs_theme');
+      if (saved === 'dark') {
+        document.documentElement.classList.add('dark');
+      }
+    };
+  }, []);
 
   const linkCls = ({ isActive }: { isActive: boolean }) =>
     `text-[13px] px-2 py-1 rounded-[4px] ${

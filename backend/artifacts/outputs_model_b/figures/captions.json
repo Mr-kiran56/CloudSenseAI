@@ -1,0 +1,14 @@
+{
+ "01_unit_cost": "Unit-cost distributions",
+ "02_cost_vs_requests": "Fixed + variable cost structure",
+ "03_unit_cost_time": "Unit cost over time",
+ "04_tier_effect": "Tiered transfer pricing effect",
+ "05_utilisation": "Utilisation vs fleet size",
+ "10_residuals": "Residual analysis",
+ "11_shap_beeswarm": "SHAP beeswarm",
+ "11_shap_bar": "SHAP importance",
+ "12_dep_mtd_network_bytes": "SHAP dependence: mtd_network_bytes",
+ "12_dep_unit_cost_today": "SHAP dependence: unit_cost_today",
+ "12_dep_cpu_avg": "SHAP dependence: cpu_avg",
+ "12_dep_provisioning_frequency": "SHAP dependence: provisioning_frequency"
+}

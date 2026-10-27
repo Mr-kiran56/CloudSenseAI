@@ -1,0 +1,1038 @@
+# CloudSense AI — Complete Implementation Roadmap
+
+Based on the project description, approved abstract, research paper, technology stack, references, and architecture diagram you provided, the right approach is to build CloudSense AI as a complete, working cloud cost intelligence platform, rather than just an ML notebook or a dashboard.
+
+Your project combines three major systems:
+
+1. Cloud data collection and FinOps: collect AWS billing, resource utilization, and business KPI data.
+2. Machine learning and Explainable AI: forecast cloud expenditure, predict unit economics, detect cost anomalies and Denial-of-Wallet (DoW) behavior, and explain the results.
+3. Secure cloud automation: let users review recommendations, approve actions, and execute them through MCP and Boto3, with an audit trail and notifications.
+
+I've used your uploaded research paper and project documents as the primary specification. The implementation plan below follows the models and architecture in those documents, including Prophet, XGBoost, Isolation Forest, SHAP, FastAPI, React, PostgreSQL, LangGraph, MCP, and Boto3.
+
+## 1. What you are actually building
+
+AWS Cloud Environment
+
+Billing • CloudWatch metrics • Resource inventory • Application KPIs
+
+Data ingestion and feature engineering
+
+Boto3 • scheduled collectors • S3 • PostgreSQL
+
+Prophet
+
+Cost forecasts
+
+XGBoost
+
+Cost per KPI
+
+Isolation Forest
+
+Anomalies and DoW signals
+
+XAI and recommendation engine
+
+SHAP • root cause • confidence • risk • estimated savings • ROI
+
+Human approval and policy checks
+
+Review proposed changes before any state-changing operation
+
+MCP server → Boto3 → AWS
+
+Allowlisted operations • least privilege • audit logs
+
+React dashboard and conversational assistant
+
+Forecasts, alerts, recommendations, approvals, what-if simulation, and action history
+
+This reflects the five-stage processing pipeline in your research paper and the MCP-based remediation workflow in your architecture diagram. Your research paper's first architecture figure places the forecasting and anomaly models in parallel, followed by explainability and the approval-controlled execution layer.
+
+Important: your research paper describes a proposed framework, not a verified production deployment. Its stated targets—such as forecasting MAPE below 5% and improved anomaly detection—must be measured on your own datasets. Treat them as evaluation goals, not guaranteed results.
+
+## 2. AWS services you should use
+
+You do not need to deploy every AWS service in your project. Start with the services that support data collection, ML, storage, monitoring, and safe remediation. Add the optional services as your project matures.
+
+Recommended implementation for CloudSense AI, based on your uploaded architecture and the AWS integration requirements.
+
+| AWS service                          | Purpose in your project                                              | Priority                          |
+| ------------------------------------ | -------------------------------------------------------------------- | --------------------------------- |
+| AWS IAM                              | Roles, permissions, least-privilege access                           | Essential                         |
+| AWS Cost and Usage Reports (CUR 2.0) | Historical cost and usage dataset                                    | Essential                         |
+| Amazon S3                            | Store billing exports, public datasets, trained models and artifacts | Essential                         |
+| Amazon CloudWatch                    | Collect CPU, network, request, and application metrics               | Essential                         |
+| AWS Cost Explorer API                | Query daily or monthly cost summaries                                | Essential                         |
+| Amazon EC2                           | Monitored test resources and approved remediation                    | Essential for live demo           |
+| Amazon EBS                           | Identify unattached volumes and evaluate storage optimization        | Phase 2                           |
+| AWS Auto Scaling                     | Inspect and optimize scaling configurations                          | Phase 2                           |
+| Amazon RDS                           | Optional managed PostgreSQL for your application                     | Optional                          |
+| AWS Lambda                           | Run scheduled collectors or event-driven tasks                       | Optional                          |
+| Amazon EventBridge                   | Schedule data collection and model evaluation                        | Recommended                       |
+| Amazon SNS                           | Publish anomaly alerts and notifications                             | Recommended                       |
+| AWS Budgets                          | Set spending limits and budget alerts                                | Recommended                       |
+| AWS CloudTrail                       | Audit AWS API activity                                               | Essential before live remediation |
+| AWS Secrets Manager                  | Protect application secrets and webhook credentials                  | Recommended for deployment        |
+
+Official setup references:
+
+- [AWS Cost and Usage Reports / Data Exports](https://docs.aws.amazon.com/cur/latest/userguide/creating-cur.html?utm_source=chatgpt.com) — CUR 2.0 is AWS's recommended detailed cost-export format.&#x20;
+
+  [image](https://www.google.com/s2/favicons?domain=https://docs.aws.amazon.com\&sz=32)
+
+  AWS Data Exports
+
+  +1
+
+- [CloudWatch GetMetricData API](https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_GetMetricData.html?utm_source=chatgpt.com) — programmatic metric retrieval, including batched queries.&#x20;
+
+  [image](https://www.google.com/s2/favicons?domain=https://docs.aws.amazon.com\&sz=32)
+
+  Amazon CloudWatch
+
+- [AWS Cost Anomaly Detection](https://docs.aws.amazon.com/cost-management/latest/userguide/manage-ad.html?utm_source=chatgpt.com) — an optional native comparison and alerting baseline.&#x20;
+
+  [image](https://www.google.com/s2/favicons?domain=https://docs.aws.amazon.com\&sz=32)
+
+  AWS Cost Management
+
+
+
+### My recommended architecture decision
+
+Use AWS for the monitored environment, but develop the ML models and application on your existing computer initially.
+
+Your institute's specifications list an Intel Core i5 or equivalent, 16 GB RAM, and a 256 GB SSD. That is a reasonable starting point for these CPU-based models and a local PostgreSQL database. You do not need a GPU for Prophet, XGBoost, or Isolation Forest.&#x20;
+
+Project - ABSTRACT Format(CSE(AI)).pdf
+
+
+
+A practical first deployment is:
+
+- Local computer: Python training, FastAPI, React and PostgreSQL.
+- AWS: billing data, CloudWatch metrics and a small test environment.
+- S3: raw datasets, processed datasets and versioned model artifacts.
+- Later: Docker-based deployment to an AWS-hosted application environment.
+
+This reduces unnecessary cloud charges while you are still developing and debugging.
+
+## 3. Where to collect your training datasets
+
+Your research paper specifies three classes of data: financial telemetry, infrastructure telemetry, and business telemetry. It also proposes combining public workload traces with synthetic cost and DoW attack scenarios because real production billing data is often confidential.&#x20;
+
+2026322134.pdf
+
+
+
+You should build a multi-source dataset, rather than searching for one dataset that supposedly covers the entire project.
+
+[Calculate how much cloud infrastructure costs — Infrastructure Guide](https://images.openai.com/static-rsc-4/wBfNkUAxIdbHBNRSGqlzJw8kbCoPHOHK5Pp8k8WSB_ad_S8CL4QEdVAMhyQXOpo0790dqFsc5DSxZP29vqmGKYldsShARdCC9Fms08h8Hbv027jLjyUXbOedVfenSM4Tuph4cg7X63Qz96o4d_LJ7gZRGGFBGLlUxJyCw8ub_88?purpose=inline)
+
+Dataset 1 — AWS billing and expenditure
+
+Essential
+
+Collect your own CUR 2.0 exports and, where useful, Cost Explorer API results. Start with daily service-level cost records, then add resource-level details and resource tags when available.
+
+Use this for Prophet forecasting, spending analysis, budget monitoring and cost-per-KPI calculations.
+
+Source: [AWS CUR 2.0 documentation](https://docs.aws.amazon.com/cur/latest/userguide/what-is-cur.html?utm_source=chatgpt.com)&#x20;
+
+[image](https://www.google.com/s2/favicons?domain=https://docs.aws.amazon.com\&sz=32)
+
+AWS Data Exports
+
++1
+
+
+
+[EC2 のモニタリングとオブザーバビリティ | AWS Observability Best Practices](https://images.openai.com/static-rsc-4/aC8WpKJvi94IMtsjzodpDeEESW-wJoHQxn-WkReW-Hfo73Af0v5YY-8xVGbeX4HO_GZXLcZM4Oq1S0VHQsGH37VMf6w68nNHEyvG9S-SoJR8cDZh7c0zOShNnGcCMu9Er-p4veH-Z24RiHKtnKmhPUmjzAzB7iX0GoWX8Pf2MmU?purpose=inline)
+
+Dataset 2 — Cloud infrastructure telemetry
+
+Essential
+
+Collect CloudWatch metrics from your EC2 instances and other supported resources. Start with CPU utilization and network traffic; add disk, memory and request-level metrics where available.
+
+Use this for resource-utilization analysis, feature engineering, anomaly detection and recommendations.
+
+Source: [CloudWatch metric retrieval](https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_GetMetricData.html?utm_source=chatgpt.com)&#x20;
+
+[image](https://www.google.com/s2/favicons?domain=https://docs.aws.amazon.com\&sz=32)
+
+Amazon CloudWatch
+
+
+
+[Numenta Anomaly Benchmark: A Benchmark for Streaming Anomaly Detection](https://images.openai.com/static-rsc-4/p5nZyd0EL2qtVX4KspIb4McpKf-qbKxbcuRx5ZJEtbrE_mv0sp5iP_ZcwqyO-Urj7eY9t0WhZ1PS3YcdskfNwgz_nTZ1NRaIbkTQyKEL12To8XMNK2732RDZ_hGwFJm_yCOFDuSqyefiYS5H_nCqfqSCo2oAG1wriVeHc__IuLw?purpose=inline)
+
+Dataset 3 — Public anomaly detection benchmark
+
+Essential for experiments
+
+Use the [Numenta Anomaly Benchmark (NAB)](https://github.com/numenta/NAB?utm_source=chatgpt.com), especially its `realAWSCloudwatch` and relevant labeled time-series data.
+
+It is useful for testing streaming anomaly-detection behavior. Its labels are not automatically Denial-of-Wallet labels, so do not claim NAB alone trains or validates a DoW detector.&#x20;
+
+[image](https://www.google.com/s2/favicons?domain=https://github.com\&sz=32)
+
+GitHub
+
++1
+
+
+
+[DoWTS – Denial-of-Wallet Test Simulator: Synthetic data generation for preemptive defence | Journal of Intelligent Information Systems | Springer Nature Link](https://images.openai.com/static-rsc-4/tr6Eh6vjy7xufinRtAxElRYP28lU_XoNzidyWCrbLrzSZ-mJzhkHyOJloO1zIngotviKSmtG2ciyVqed-ots8RzI4K8IRaWhU-CwaeHn47F4Yaa-8rRVmaZ5HkJxDEptwoMHXjHJ1CgkT0ngOcopdnsH-kZzZ9gULMQcRZv5EFM?purpose=inline)
+
+Dataset 4 — Denial-of-Wallet research dataset
+
+Important for DoW research
+
+Start with the [2024 Data in Brief paper and dataset](https://doi.org/10.1016/j.dib.2023.109921?utm_source=chatgpt.com), titled Generation of a dataset for DoW attack detection in serverless architectures.
+
+Inspect the paper's associated data files, fields, license and collection methodology. Map its invocation and attack-related features to your CloudSense AI feature schema before training.&#x20;
+
+[image](https://www.google.com/s2/favicons?domain=https://www.sciencedirect.com\&sz=32)
+
+ScienceDirect
+
+
+
+[From Borg to Kubernetes – Introduction to Cloud Computing](https://images.openai.com/static-rsc-4/updROdmZew-B0bBhVasfEYHEBdkV70Rz956eXqEK5sg6cgr7sP7S9hhRegI9cokYQI0xA5-R7H233_vhmKlYux4-6ZCNDwqcd6kKm1qCMKUjHs8TS77H0fOLv7vx97sjgiCrb_sha_rPGfXnW-U7NQ2n8dczBfaRJnY24q6ffNo?purpose=inline)
+
+Dataset 5 — Public workload and resource traces
+
+Your paper mentions Google Borg, Azure public traces and Alibaba cluster traces. Use these to study workload intensity, resource utilization and provisioning patterns.
+
+You must convert their schemas into your common feature format and use a documented pricing model before deriving estimated AWS costs. A workload trace is not automatically a billing dataset.
+
+### Which datasets should train which models?
+
+| Model            | Primary training data                                                  | Target or expected output                             |
+| ---------------- | ---------------------------------------------------------------------- | ----------------------------------------------------- |
+| Prophet          | Historical daily AWS cost series or a documented synthetic cost series | Forecast expenditure                                  |
+| XGBoost          | Joined cost, resource and business KPI observations                    | Cost per active user, API request or transaction      |
+| Isolation Forest | Normal and mixed-behavior infrastructure telemetry                     | Anomaly score                                         |
+| DoW evaluation   | DoW research data, plus controlled synthetic attack scenarios          | Detection of labeled attack windows during evaluation |
+| SHAP             | Trained XGBoost model and compatible feature matrix                    | Feature-level explanations                            |
+
+For DoW, keep two tasks separate: Isolation Forest is your primary unsupervised detector, as specified in your abstract, while labeled attack data is used to assess its detection quality and compare it with alternative detectors.
+
+### How to obtain meaningful labels
+
+Real attack labels are the hardest part. Do not label every high CPU or high-cost period as an attack.
+
+Use three categories:
+
+- `normal`: normal workloads and ordinary cost variations.
+- `operational_anomaly`: unusual but not confirmed malicious behavior.
+- `dow_candidate` or `dow_confirmed`: simulated attack windows or incidents supported by the dataset's labels and methodology.
+
+A synthetic DoW generator can create controlled bursts in invocation rate, provisioning frequency and cost velocity. Mark these as simulated data, preserve the random seed and document the attack-generation assumptions. Evaluate synthetic results separately from public labeled results.
+
+For Unit Economics, you also need business KPIs. Your own application can generate safe sample values for active users, API requests and transactions. If you lack real business telemetry, use a clearly identified synthetic dataset rather than pretending those figures came from AWS.
+
+## 4. What live-streaming data should CloudSense AI collect?
+
+One important design distinction: AWS billing data is not the same as real-time infrastructure telemetry. Your system should combine billing data, operational metrics, and application events using timestamps and resource identifiers.
+
+| Data stream                            | Source                                      | Suggested initial collection frequency          | Main use                                  |
+| -------------------------------------- | ------------------------------------------- | ----------------------------------------------- | ----------------------------------------- |
+| Service and daily costs                | CUR 2.0 / Cost Explorer                     | Daily ingestion; query cost summaries as needed | Forecasting and cost analysis             |
+| EC2 CPU utilization                    | CloudWatch                                  | Every 5 minutes                                 | Utilization and anomaly detection         |
+| EC2 network traffic                    | CloudWatch                                  | Every 5 minutes                                 | Traffic spikes and behavior changes       |
+| EC2 disk I/O                           | CloudWatch                                  | Every 5 minutes, if available                   | Resource utilization analysis             |
+| EC2 memory utilization                 | CloudWatch Agent or application telemetry   | Every 5 minutes, if configured                  | Rightsizing recommendations               |
+| Lambda invocation count and duration   | CloudWatch                                  | 1–5 minutes for a prototype                     | Serverless behavior and DoW signals       |
+| API request count and latency          | Application logs or CloudWatch metrics      | 1–5 minutes                                     | Traffic patterns and business KPIs        |
+| Resource inventory and tags            | EC2, EBS, RDS and Auto Scaling APIs         | Every 15–60 minutes                             | Resource optimization                     |
+| Provisioning and configuration changes | CloudTrail                                  | Event-driven ingestion                          | Audit, change detection and investigation |
+| Active users and transactions          | Your application or synthetic KPI generator | Per minute or aggregated intervals              | XGBoost unit economics                    |
+
+These are recommended starting intervals, not AWS service guarantees. Choose intervals based on the metrics available, workload behavior, data volume and cost.
+
+For billing, CUR 2.0 provides detailed exported usage and cost data. AWS documents that billing exports are updated periodically, and the first delivery can take up to 24 hours. It is therefore unsuitable as the sole source of minute-by-minute attack detection.&#x20;
+
+[image](https://www.google.com/s2/favicons?domain=https://docs.aws.amazon.com\&sz=32)
+
+AWS Data Exports
+
++1
+
+
+
+CloudWatch's `GetMetricData` API lets you retrieve multiple time series in a request, which is useful for your collector.&#x20;
+
+[image](https://www.google.com/s2/favicons?domain=https://docs.aws.amazon.com\&sz=32)
+
+Amazon CloudWatch
+
+
+
+### Recommended ingestion flow
+
+AWS APIs, CUR exports and application events
+
+Collectors
+
+Boto3 clients • scheduled jobs • event handlers
+
+Validation and normalization
+
+Timestamps • UTC • resource IDs • missing values • deduplication
+
+S3
+
+Raw and processed files
+
+PostgreSQL
+
+Queryable application data
+
+Feature builder → ML inference → alerts
+
+You do not need Kinesis, Kafka or a large streaming platform for the first version. Scheduled polling of CloudWatch plus event-driven audit ingestion is enough to demonstrate a near-real-time monitoring system. Add managed streaming only if the volume or latency requirements justify it.
+
+## 5. Exact features and parameters for your ML models
+
+Your research paper specifies engineered features such as cost velocity and provisioning frequency, with business KPI correlation for XGBoost and time-series cost data for Prophet.&#x20;
+
+2026322134.pdf
+
+
+
+The following are implementation defaults to start testing; they are not parameters specified as validated settings in your paper.
+
+### Model A — Prophet: cloud cost forecasting
+
+[Time Series Forecasting example using power demand with Prophet in Python | by Kyle Jones | Medium](https://images.openai.com/static-rsc-4/zNp4Rg5Gh92s65p71Nvm6dFEYKep8bNnTfHCPFj0iH-ktCp3Lnf08mRnnTJ-vw5Kg62U6z5qpmPe9ASgBgv70777dJK6i4PBMeBcPSOOUFZX7b6WJbPpRvtnitk_9HGCft1lD3jlqTmehmQ2cGlCmFCPZbI_kDev4iOUTA_D1Pw?purpose=inline)
+
+Purpose: predict future AWS expenditure.
+
+Input: daily aggregated cost per account, service, or resource group.
+
+Input dataset format
+
+| Column              | Example                                         |
+| ------------------- | ----------------------------------------------- |
+| `ds`                | `2026-10-01`                                    |
+| `y`                 | `125.60`                                        |
+| Optional regressors | request count, active users, workload indicator |
+
+Initial parameters
+
+- `growth`: `linear`
+- `daily_seasonality`: `False` for daily aggregated data
+- `weekly_seasonality`: `True` when supported by the history
+- `yearly_seasonality`: `auto`, depending on history length
+- `interval_width`: `0.80` for an initial prediction interval
+- `horizon`: 7, 30 and 90 days for different forecasts
+
+Training process
+
+1. Aggregate billing data by day and define whether the target is net amortized cost, unblended cost or another consistent cost basis.
+2. Fill or investigate missing dates; do not treat missing billing records as zero without checking why.
+3. Train Prophet on earlier dates only.
+4. Forecast the next 7, 30 and 90 days.
+5. Compare predictions against future actual cost using rolling-origin validation.
+6. Display forecast intervals and the expected budget-overrun date when one can be calculated.
+
+Evaluation: MAPE and RMSE, as specified in your paper. Add MAE to make absolute dollar errors easier to interpret.
+
+A MAPE target below 5% is your research target, not an assumed outcome.
+
+### Model B — XGBoost: unit economics prediction
+
+[Python | 贝叶斯搜索参数优化的XGBoost+SHAP可解释性分析回归预测及可视化算法-阿里云开发者社区](https://images.openai.com/static-rsc-4/MmZ4TVeK61rBw4dxlKd8dqfJDGq3B930lV-FobKsZxInMd_ECSVEBU88pEuH7cKauo4vnRG8Y1Ae89gURRqmCo4duxn9Xqv26A7eKVGugIVllAUDla2GdTrgfj07AqQ3xO_E6lf1smIuPIDQummMCJ6WNSJbX_ws5GJry4jj9ls?purpose=inline)
+
+Purpose: estimate how cloud expenditure relates to business output.
+
+Input: joined billing, resource, and business KPI observations.
+
+Initial feature schema
+
+- `cost_usd`
+- `active_users`
+- `api_requests`
+- `transactions`
+- `cpu_avg`
+- `network_bytes`
+- `instance_family`
+- `region`
+- `resource_tag`
+- `provisioning_frequency`
+- `time_lagged_spend`
+
+Derive unit costs such as:
+
+\\[ \text{Cost per API request} = \frac{\text{Cloud cost}}{\text{API requests}} \\]
+
+\\[ \text{Cost per active user} = \frac{\text{Cloud cost}}{\text{Active users}} \\]
+
+Exclude or explicitly handle intervals with zero denominators.
+
+Initial training parameters
+
+| Parameter          | Starting value     |
+| ------------------ | ------------------ |
+| `n_estimators`     | 500                |
+| `max_depth`        | 6                  |
+| `learning_rate`    | 0.05               |
+| `subsample`        | 0.8                |
+| `colsample_bytree` | 0.8                |
+| `objective`        | `reg:squarederror` |
+| `random_state`     | 42                 |
+
+These are tunable starting values. Use time-aware train/validation splits and early stopping where supported by your installed XGBoost version.
+
+Training process
+
+1. Join cost and KPI records using a consistent time bucket and resource or service grouping.
+2. Remove duplicate observations and prevent future KPI information from leaking into historical predictions.
+3. Encode categorical fields such as region and instance family.
+4. Define the prediction target explicitly—for example, next-day cost per API request or the cost associated with the next reporting interval.
+5. Tune parameters on a validation period, then test on a later untouched period.
+6. Compare with Linear Regression, Random Forest and LightGBM, as proposed in your paper.
+
+Evaluation: MAE, RMSE and \\(R^2\\). Measure performance against a baseline before claiming improvement.
+
+One important modelling decision: your paper defines unit cost as total cloud cost divided by KPI volume. You can use that as the baseline target, then optionally build a future unit-cost prediction model. Do not confuse predicting the ratio with predicting the numerator and denominator independently.
+
+### Model C — Isolation Forest: anomalies and DoW signals
+
+[IsolationForest example — scikit-learn 0.21.3 documentation](https://images.openai.com/static-rsc-4/vTl66T3ysA0Hco1xkBotB5TSUmnoVoIa4WttL7ouFRfHfzNGchJBtZH6d_YXiCHT3AtuzC3JYWQQZ_LYgVZmGWcCU-vOUlQYoqZvvAqhaczW7B5yKJ3SLKArdp5YPPFpsEN4GtzSERPPlNNAJOStyLGgylS3TPuSFm7C7hX6maA?purpose=inline)
+
+Purpose: flag unusual infrastructure or spending behavior without requiring every event to be labeled.
+
+Input: time-aligned operational metrics and engineered change features.
+
+Features
+
+- `cost_velocity`
+- `request_rate`
+- `request_rate_delta`
+- `provisioning_frequency`
+- `cpu_utilization`
+- `network_io`
+- `storage_growth_rate`
+- `spend_vs_baseline`
+- `invocation_rate`, where applicable
+
+Your paper defines two key engineered features:
+
+\\[ \text{CostVelocity}(t)= \frac{\text{Cost}(t)-\text{Cost}(t-\Delta)}{\Delta} \\]
+
+\\[ \text{ProvisioningFrequency}(t)= \frac{N\_{\text{create}}(t)}{|t|} \\]
+
+Implement both with clearly defined units and time windows.
+
+Initial parameters
+
+- `n_estimators`: 200
+- `contamination`: `0.01` as an initial experimental assumption
+- `max_samples`: `auto`
+- `random_state`: 42
+
+`contamination=0.01` does not mean 1% of events are actually attacks. It is an initial setting that influences the model's outlier threshold; tune it against validation results and operational alert volume.
+
+Training process
+
+1. Build fixed-interval time buckets, such as 5-minute windows.
+2. Calculate the cost and provisioning rates and their changes.
+3. Fit the model on representative historical normal or predominantly normal data.
+4. Generate anomaly scores for later observations.
+5. Tune the alert threshold using labeled anomaly windows and simulated attack scenarios.
+6. Group consecutive anomalous windows into incidents and attach supporting metrics.
+
+Evaluation: precision, recall, F1-score and AUPRC. Measure false positives, detection delay and alert volume as well.
+
+Do not directly interpret an Isolation Forest score as a calibrated probability that an attack occurred. A score threshold can produce an alert, but a trustworthy confidence probability needs a separately justified calibration process.
+
+### Model D — SHAP: explain the prediction
+
+SHAP is the explanation layer, not a fourth predictive model.
+
+For XGBoost, use `TreeExplainer` to show which features influence a prediction. For example:
+
+- Cost per request is rising.
+- API requests are stable.
+- Provisioning frequency has increased.
+- Network traffic does not explain the increase.
+
+That evidence can be converted into a readable explanation, with a risk level and recommended next investigation. For Isolation Forest, your paper mentions Kernel SHAP; use a carefully chosen sample because general-purpose explanations can be expensive.
+
+Estimated savings must come from a separate calculation. Estimate the baseline and optimized cost, validate the assumptions, and show the expected range. SHAP feature importance alone does not establish financial savings.
+
+## 6. How to train the models from start to finish
+
+Follow this sequence rather than training all three models at once.
+
+1. Create the data collection layer
+
+   Implement Python collectors for CUR files in S3, CloudWatch metrics, resource inventory and your KPI data. Store raw records before transforming them so you can reproduce your experiments.
+2. Create a common data schema
+
+   Standardize timestamps to UTC, use consistent currency units, preserve AWS account and resource identifiers, and document the aggregation interval. Save a data dictionary alongside the datasets.
+3. Build separate training datasets
+   - `cost_daily.csv` for Prophet.
+   - `unit_economics.csv` for XGBoost.
+   - `anomaly_windows.csv` for Isolation Forest and anomaly evaluation.
+   Use `dow_labels.csv` for labeled DoW evaluation and keep synthetic labels distinguishable from observed labels.
+4. Perform data quality checks
+
+   Inspect missing timestamps, duplicate rows, impossible negative counters, missing KPI values, outliers and billing revisions. Check that cost and KPI values use the same reporting period.
+5. Train and evaluate each model independently
+
+   Establish simple baselines first. Use an initial chronological split with the earliest 70% for training, as proposed in your paper, then evaluate on later periods. Use expanding-window rolling-origin validation for time-series experiments.
+6. Add XAI and the recommendation engine
+
+   Combine predictions with feature attributions, cost estimates, risk policies and resource metadata. Each recommendation should explain why it exists and what evidence would justify the proposed action.
+7. Version and persist model artifacts
+
+   Save the trained model, feature schema, training-data version, hyperparameters, evaluation metrics and training timestamp. Use MLflow to track experiments and store approved model artifacts in S3.
+8. Integrate with FastAPI
+
+   Load approved artifacts, expose prediction endpoints and store results in PostgreSQL. The API should return structured JSON, not raw notebook output.
+9. Run shadow monitoring before remediation
+
+   Compare predictions and recommendations with actual outcomes without changing AWS resources. Once the behavior is validated, introduce the approval-controlled remediation workflow.
+
+### Recommended model evaluation table
+
+| Component         | Required metrics                                   | Baseline comparison              |
+| ----------------- | -------------------------------------------------- | -------------------------------- |
+| Cost forecasting  | MAPE, RMSE, MAE                                    | Seasonal-naïve, ARIMA/SARIMA     |
+| Unit economics    | MAE, RMSE, \\(R^2\\)                               | Linear Regression, Random Forest |
+| Anomaly detection | Precision, recall, F1, AUPRC                       | Z-score/IQR, One-Class SVM       |
+| Remediation       | Approval latency, execution success, rollback rate | Manual or rule-based workflow    |
+
+Your research paper also proposes comparing LightGBM, Local Outlier Factor and an autoencoder. These can be later experiments, not prerequisites for the first working implementation.&#x20;
+
+2026322134.pdf
+
+
+
+Avoid data leakage: do not randomly shuffle time-series observations across train and test sets. Do not calculate historical features using future data. Fit preprocessing and threshold selection using training or validation data, then evaluate on the untouched test period.
+
+## 7. Accounts, API keys and credentials you need
+
+You need AWS access for cloud integration, optional credentials for notifications, and optionally an LLM provider for the conversational assistant. You do not need an API key for every model or Python library.
+
+1\. AWS account
+
+Required for live cloud data and AWS remediation. Enable MFA, establish a budget alert, choose a region, and create a dedicated development environment. Billing access and the permissions needed to read resource metrics must be configured separately.
+
+2\. IAM role or user credentials
+
+Use temporary credentials or an IAM role wherever possible. Give the data collector read-only access to the resources it needs, and give the remediation service a separate, narrowly scoped permission set.
+
+Never embed AWS access keys in frontend code, source files, Git repositories or prompts to AI coding tools.
+
+3\. Slack, Teams, Discord or email credentials
+
+Configure only the notification channels you actually use. A Discord webhook or Slack webhook can be enough for a prototype. Email delivery may require provider configuration and verified sender details. Store webhook URLs and other secrets securely.
+
+4\. Optional LLM provider API key
+
+If your conversational assistant uses a hosted LLM, create a provider account and API key for that provider. The key is only required for that integration; it is not required to train Prophet, XGBoost or Isolation Forest.
+
+You can first build the dashboard and deterministic recommendation APIs without an LLM.
+
+5\. PostgreSQL and local development tools
+
+Install Python, Node.js, Git, Docker, PostgreSQL and VS Code. Your approved project specification lists FastAPI, React, Tailwind CSS, TypeScript, SQLAlchemy, Pydantic, scikit-learn, XGBoost, Prophet, SHAP, LangChain, LangGraph and Boto3.&#x20;
+
+Project - ABSTRACT Format(CSE(AI)).pdf
+
+
+
+### What requires a key, and what does not?
+
+| Tool or integration                    | Credential required?                                                        |
+| -------------------------------------- | --------------------------------------------------------------------------- |
+| Python, Pandas, NumPy, scikit-learn    | No                                                                          |
+| Prophet, XGBoost, SHAP                 | No                                                                          |
+| FastAPI and PostgreSQL running locally | No external API key                                                         |
+| Boto3 accessing AWS                    | Yes, AWS credentials or an appropriate role                                 |
+| CUR 2.0 and CloudWatch                 | AWS permissions; no separate third-party API key                            |
+| MCP server you develop                 | No external key inherently required; secure its transport and client access |
+| LangGraph and LangChain                | No key for the framework itself; an LLM provider key may be needed          |
+| Slack or Discord webhook               | Webhook credential                                                          |
+| Hosted LLM service                     | Provider API key                                                            |
+| Grafana running locally                | No external key inherently required                                         |
+
+### Suggested environment variables
+
+Create a `.env.example` file containing only placeholder values, such as:
+
+```
+AWS_REGION=ap-south-1
+AWS_PROFILE=cloudsense-dev
+
+DATABASE_URL=postgresql+psycopg://user:password@localhost:5432/cloudsense
+
+S3_BUCKET=your-cloudsense-data-bucket
+
+LLM_PROVIDER=optional
+LLM_API_KEY=
+SLACK_WEBHOOK_URL=
+DISCORD_WEBHOOK_URL=
+
+APP_ENV=development
+REMEDIATION_ENABLED=false
+```
+
+This is a template, not a set of credentials. Use an actual database password only in your local, untracked `.env` file or a proper secret store. Never commit that file to Git.
+
+If you use a local AWS profile, configure it with the AWS CLI and verify access with a read-only request before running the application. If you deploy the application to AWS, prefer an execution role instead of copying access keys into a container.
+
+## 8. AWS setup: the order in which you should configure everything
+
+Complete these steps in order. Avoid creating expensive resources until the corresponding feature is ready.
+
+Step 1 — Secure your AWS account
+
+- Enable MFA and set up an administrative access method.
+- Create a dedicated development role or profile.
+- Set a budget and billing alerts.
+- Choose a primary AWS Region and document it.
+- Do not use root credentials in your application.
+
+Step 2 — Set up the data storage
+
+- Create a private S3 bucket for datasets and model artifacts.
+- Configure CUR 2.0 to export to S3.
+- Create PostgreSQL locally.
+- Establish folder conventions for raw, processed and training data.
+- Enable encryption and appropriate retention controls.
+
+Step 3 — Validate the live data collectors
+
+- Read one billing export from S3.
+- Fetch CloudWatch CPU and network metrics for a test resource.
+- Enumerate EC2 instances, EBS volumes and tags using read-only permissions.
+- Save sample output as CSV or Parquet.
+- Check timestamps, units, completeness and resource identifiers before training.
+
+Step 4 — Train models locally
+
+Train Prophet, XGBoost and Isolation Forest separately. Record evaluation metrics, save the artifacts and expose each model through a Python inference interface.
+
+Step 5 — Implement the backend and dashboard
+
+Connect FastAPI to PostgreSQL and the ML inference layer. Build React pages for costs, forecasts, resource inventory, anomaly incidents, recommendations, approval requests and audit history.
+
+Step 6 — Add MCP and approved remediation
+
+Build typed MCP tools around a small allowlist of actions. Start with read-only diagnostics, then test state-changing actions against disposable resources. Require authenticated human approval, revalidate the resource state and action parameters at execution time, and log the result.
+
+Step 7 — End-to-end testing
+
+Generate or ingest a controlled anomaly, verify that it appears in the dashboard, inspect the explanation, issue an alert, submit a recommendation for approval, and verify the action and audit record in the test environment.
+
+### Resource safety rules you should implement from day one
+
+- Start with read-only AWS permissions.
+- Keep `REMEDIATION_ENABLED=false` until the remediation workflow passes its tests.
+- Never let an LLM directly choose arbitrary AWS API calls or construct unrestricted Boto3 operations.
+- Use an allowlist of supported actions and validate all resource IDs, regions, parameters and current resource states.
+- Require a human to approve the exact action and target resource—not just a general recommendation.
+- Reject expired approvals and approvals for actions whose parameters have changed.
+- Do not automatically delete EBS volumes, snapshots or databases based only on an anomaly score.
+- Store the recommendation, approver, execution result and AWS request identifiers in an audit log.
+
+## 9. Backend APIs you should implement
+
+Use FastAPI to expose the following endpoints. These are proposed application routes, not existing AWS API endpoints.
+
+| Method | Route                                  | Function                                        |
+| ------ | -------------------------------------- | ----------------------------------------------- |
+| `GET`  | `/api/v1/health`                       | Application health check                        |
+| `GET`  | `/api/v1/costs/summary`                | Summarize cloud costs                           |
+| `GET`  | `/api/v1/costs/forecast`               | Return Prophet forecasts                        |
+| `GET`  | `/api/v1/resources`                    | Return the AWS resource inventory               |
+| `GET`  | `/api/v1/anomalies`                    | List anomaly and DoW candidate incidents        |
+| `POST` | `/api/v1/models/train`                 | Start an authorized training job                |
+| `GET`  | `/api/v1/models/metrics`               | Return evaluation metrics and model versions    |
+| `GET`  | `/api/v1/recommendations`              | List optimization recommendations               |
+| `POST` | `/api/v1/recommendations/{id}/approve` | Approve a specific recommendation               |
+| `POST` | `/api/v1/recommendations/{id}/reject`  | Reject a recommendation                         |
+| `POST` | `/api/v1/remediations/{id}/execute`    | Execute a previously approved, validated action |
+| `GET`  | `/api/v1/audit-logs`                   | Retrieve remediation and approval history       |
+| `POST` | `/api/v1/simulations`                  | Run a what-if cost comparison                   |
+| `POST` | `/api/v1/chat`                         | Ask the conversational assistant a question     |
+
+Secure these endpoints with authentication, authorization, input validation and rate limiting as appropriate. In particular, training and remediation endpoints must not be open to unauthenticated users.
+
+### Suggested database tables
+
+- `aws_accounts` — account aliases and integration metadata, not access keys.
+- `resources` — resource identifiers, types, tags, regions and discovery timestamps.
+- `cost_records` — daily cost records and billing dimensions.
+- `cloud_metrics` — time-series metrics and collection timestamps.
+- `business_kpis` — API requests, transactions and active users.
+- `model_versions` — artifact locations, training dates and evaluation metrics.
+- `predictions` — forecast and unit-economics results.
+- `anomaly_incidents` — anomaly scores, evidence, status and labels.
+- `recommendations` — proposed action, explanation, estimated savings and risk.
+- `approval_records` — approver, decision, timestamp and approved action hash.
+- `remediation_runs` — execution status, results and AWS request identifiers.
+- `notification_history` — sent alerts and delivery status.
+- `audit_logs` — security and operational events.
+
+Use PostgreSQL for application records and structured querying, with S3 for larger raw datasets and model artifacts. Avoid inserting every high-frequency metric point into a single unpartitioned table indefinitely; choose retention and aggregation policies early.
+
+## 10. How MCP, Boto3 and LangGraph fit together
+
+These technologies serve different purposes:
+
+LangGraph / conversational assistant
+
+Interprets the user's request, gathers context, calls permitted tools and presents the results. It should not be the security authority for executing cloud changes.
+
+MCP client and server
+
+Provide structured tool discovery and communication, such as `list_resources`, `get_cost_metrics`, `preview_action` and `execute_approved_action`. The server enforces which tools and operations are permitted.
+
+Boto3 execution layer
+
+Calls the actual AWS APIs using the configured AWS identity. It performs the action only after server-side authorization, approval verification and parameter validation.
+
+For example, the assistant might identify an EC2 instance as a possible optimization candidate. It should first retrieve its utilization history and dependencies, estimate potential savings, and create a recommendation. An authorized user reviews the recommendation, and the server validates the exact approved action before calling Boto3.
+
+Your paper specifies this human-in-the-loop workflow rather than unrestricted autonomous changes. Preserve that requirement throughout implementation.&#x20;
+
+2026322134.pdf
+
+
+
+## 11. Recommended project folder structure
+
+Give your AI coding tool a clear structure so it can implement the backend, ML pipelines and frontend without mixing everything into one large file.
+
+```
+
+cloudsense-ai/
+├── backend/
+│   ├── app/
+│   │   ├── main.py
+│   │   ├── core/
+│   │   │   ├── config.py
+│   │   │   ├── security.py
+│   │   │   └── logging.py
+│   │   ├── api/v1/
+│   │   │   ├── costs.py
+│   │   │   ├── resources.py
+│   │   │   ├── forecasts.py
+│   │   │   ├── anomalies.py
+│   │   │   ├── recommendations.py
+│   │   │   ├── approvals.py
+│   │   │   └── remediations.py
+│   │   ├── collectors/
+│   │   │   ├── cur_collector.py
+│   │   │   ├── cloudwatch_collector.py
+│   │   │   ├── resource_inventory.py
+│   │   │   └── kpi_collector.py
+│   │   ├── data/
+│   │   │   ├── validation.py
+│   │   │   ├── preprocessing.py
+│   │   │   └── feature_engineering.py
+│   │   ├── ml/
+│   │   │   ├── prophet_model.py
+│   │   │   ├── xgboost_model.py
+│   │   │   ├── isolation_forest.py
+│   │   │   ├── explainability.py
+│   │   │   └── evaluation.py
+│   │   ├── services/
+│   │   │   ├── recommendation_service.py
+│   │   │   ├── savings_service.py
+│   │   │   ├── notification_service.py
+│   │   │   └── simulation_service.py
+│   │   ├── mcp/
+│   │   │   ├── server.py
+│   │   │   ├── tools.py
+│   │   │   └── policies.py
+│   │   ├── agents/
+│   │   │   └── assistant_graph.py
+│   │   ├── db/
+│   │   │   ├── models.py
+│   │   │   ├── schemas.py
+│   │   │   └── session.py
+│   │   └── tests/
+│   ├── scripts/
+│   ├── requirements.txt
+│   └── Dockerfile
+├── frontend/
+│   ├── src/
+│   │   ├── pages/
+│   │   ├── components/
+│   │   ├── api/
+│   │   └── types/
+│   ├── package.json
+│   └── Dockerfile
+├── data/
+│   ├── raw/
+│   ├── processed/
+│   ├── synthetic/
+│   └── README.md
+├── models/
+│   ├── prophet/
+│   ├── xgboost/
+│   ├── isolation_forest/
+│   └── README.md
+├── infrastructure/
+│   ├── iam/
+│   └── deployment/
+├── docs/
+│   ├── architecture.md
+│   ├── data_dictionary.md
+│   ├── aws_setup.md
+│   ├── model_evaluation.md
+│   └── api_specification.md
+├── .env.example
+├── .gitignore
+├── docker-compose.yml
+└── README.md
+
+```
+
+The structure is a proposed organization, not a requirement to implement every file immediately. Start with working collectors, data schemas, three model modules and a small API, then add the other modules as each feature becomes functional.
+
+## 12. Which tools should you use to build it?
+
+[How to set up GitHub Copilot in VS Code (2026 guide)](https://images.openai.com/static-rsc-4/A3Vf5j43nbI8BbziSSSLFGq4rQqVJyyctyMuyaqXad1_eG7ufaKB4gTbbcW1Y4t2no6QlgdFadp-BUKgLBDq1WblA17MKSu_HWaXKQtVwZ86ZDuv9Y1mWU3yYgCfzdUg5JfA3cHdZK4qFKRC7vfiOg2NEjD-tk0r9qQzRapScLw?purpose=inline)
+
+Visual Studio Code
+
+Main development environment for the repository, backend, frontend, Docker and tests. It is already listed in your project specifications.
+
+[Created first Machine Learning model # Rock Vs Mine Prediction Using Logistic Regression. Rock vs Mine Prediction using Logistic Regression Used Google colab for this and also uploaded in on my… | Mayank Anand](https://images.openai.com/static-rsc-4/BD6xqEVqnRXsFUH_fQ3ZGm2thTkEMCzd5Tt9WXRBfhNkNlRZpxaboZLObAKd_Guaty2vGdZ_35icnNNcwXHBbiMIj_bHvrjhvZ83wV1DAarGwXgF75SnzSKzX7fSrDjTyojb3fpKLho2h4PuAmgdPFNxi2s5b2Bp8x7xCW9Bj6s?purpose=inline)
+
+Google Colab
+
+Use for initial dataset exploration and model experiments if convenient. Move stable training code into your repository so it can be reproduced locally.
+
+[Code Yellow Software](https://images.openai.com/static-rsc-4/b5utxj-rhhezSsnnVpYMkas-Ow_Whr86kNKSBN25cF0Oc2xhQ7tu73433vLhhTCIgHlVwaveK9Ly-eVMf4SgylSaXMQjvt2e18uvW5I-Nm-iA-x_4rwMUi7b1zLksa-P-F6E0pKQM0LiUV0UF8aK3nsGC2ySoQLzHRA17ltVrXo?purpose=inline)
+
+Docker
+
+Package the backend, frontend and database environment. Add the MCP service and worker processes as needed.
+
+[Hyperparameter tuning with MLFlow and Optuna | by Cristiano Aguiar | Medium](https://images.openai.com/static-rsc-4/rr-0cO6H1E852KAyuSnlwz_diO1tCgxkmOlyhdOzu9RaJGpinrF6YkSoJQZGMJa_IDd54DhRALHMC6X8ERFQ2ZHi3bnNYQ8EIfJbC63BQPYmYnW2jUl7eysB2Pvfk6eqp-O4PmA5k0qktLqfn6nHAnrI5alQt-QFZ37RJe-n3gg?purpose=inline)
+
+MLflow
+
+Track model versions, hyperparameters and evaluation metrics, as proposed in your research paper.
+
+[Pull Request | Research Workflow Guidebook](https://images.openai.com/static-rsc-4/RqE2MO13HiqbjKNaLJSAo3KcT70esH5zf9uVZsiwVtKoxtIp1tJ1RCYS4TmS7kSY_2pW4xs8fCyn4B6u3dvuhq2F82okTA3yDkPNEzm4DiJVJYRHlS-xn5vPVsbKjXNPPYnZv5sg6j0hHHEKXJNX1hRrS-fd6F3P6LmJf4phVOQ?purpose=inline)
+
+GitHub
+
+Store code, track changes, manage issues and run automated tests. Never commit credentials or private billing exports.
+
+For the implementation agent itself, choose a coding tool that can inspect and modify your repository, run terminal commands and tests, and report which steps need your approval. If it supports AWS access, grant it a separate, temporary, read-only development identity first—not your administrator credentials.
+
+## 13. One important issue in your supplied documents
+
+There is a genuine specification discrepancy to resolve before asking an AI tool to implement everything.
+
+- Your main CloudSense AI abstract and research paper describe MCP plus Boto3 for secure, approved API-based remediation, instead of generating Infrastructure-as-Code templates.&#x20;
+
+  CloudSense_AI_Abstract_MCP_Boto3.pdf
+
+  2026322134.pdf
+
+- Your institute's project submission PDF includes an older or alternative abstract that describes generating Terraform templates and cloud CLI configurations.&#x20;
+
+  Project - ABSTRACT Format(CSE(AI)).pdf
+
+
+
+These approaches are not identical. Since your main project materials and research paper emphasize MCP-based remediation, I recommend using that as the technical implementation baseline, while confirming the final scope with your project guide.
+
+You can still document the institute's stated requirement if it remains mandatory, but do not ask the coding agent to implement both conflicting approaches without a clear decision.
+
+## 14. Master prompt for your AI coding agent
+
+This is the implementation brief I recommend giving to your coding agent after adding your source PDFs and architecture diagram to its project context.
+
+# CloudSense AI — Full Implementation Specification
+
+## Project objective
+
+Implement CloudSense AI, an intelligent cloud resource and cost optimization platform using machine learning, Explainable AI, AWS, Model Context Protocol (MCP), and Boto3.
+
+Use the supplied project abstract, research paper, architecture diagram, technology stack, and references as the primary requirements. Do not invent experimental results or claim that a feature works until it has been implemented and tested.
+
+## Required technology stack
+
+- Backend: Python, FastAPI, Pydantic, SQLAlchemy
+- Frontend: React, TypeScript, Tailwind CSS, Plotly or Chart.js
+- Database: PostgreSQL
+- Cloud integration: AWS SDK for Python (Boto3)
+- ML: Prophet, XGBoost, Isolation Forest, scikit-learn
+- Explainability: SHAP
+- Orchestration: MCP, LangGraph and LangChain where required
+- Experiment tracking: MLflow
+- Packaging: Docker
+- Storage: S3 for datasets and model artifacts
+
+## Functional requirements
+
+1. AWS data collection:
+   - Ingest AWS CUR 2.0 billing exports from S3.
+   - Collect CloudWatch metrics.
+   - Discover EC2, EBS, RDS and Auto Scaling resources.
+   - Support business KPIs such as active users, API requests and transactions.
+   - Support historical datasets and synthetic data when live data is unavailable.
+2. Data engineering:
+   - Implement schema validation, timestamp alignment, deduplication, missing-value handling and feature engineering.
+   - Calculate cost velocity, provisioning frequency and cost per KPI.
+   - Maintain reproducible raw and processed datasets.
+3. Machine learning:
+   - Train Prophet for cost forecasting.
+   - Train XGBoost for cost-per-KPI prediction.
+   - Train Isolation Forest for anomaly and DoW candidate detection.
+   - Implement SHAP explanations.
+   - Evaluate forecasting with MAPE, RMSE and MAE; regression with MAE, RMSE and R²; and anomaly detection with precision, recall, F1 and AUPRC.
+   - Use chronological splits and rolling-origin validation.
+   - Compare against the baselines specified in the research paper.
+   - Version model artifacts and save experiment results.
+4. Recommendations:
+   - Explain the evidence behind each recommendation.
+   - Include confidence information, estimated savings, risk, business impact and recommended action.
+   - Separate anomaly detection from confirmed attack classification.
+   - Distinguish measured results from estimates and synthetic experiments.
+5. Remediation:
+   - Implement typed MCP tools and a restricted Boto3 execution layer.
+   - Begin with read-only operations.
+   - Require explicit, authenticated human approval for state-changing actions.
+   - Revalidate the approved resource and action parameters before execution.
+   - Include audit logs, execution status and safe failure handling.
+   - Never permit arbitrary LLM-generated AWS commands.
+   - Keep live remediation disabled by default.
+6. Backend and frontend:
+   - Implement versioned FastAPI endpoints.
+   - Build dashboards for cost analysis, forecasting, resource inventory, anomalies, recommendations, approval workflows and audit history.
+   - Include a what-if simulator and conversational assistant.
+   - Implement authentication, authorization, input validation and appropriate error handling.
+7. Notifications:
+   - Support configurable Slack, Discord, email and custom webhook integrations.
+   - Keep credentials out of source code.
+   - Record notification delivery status.
+
+## Implementation sequence
+
+Phase 1: Inspect the supplied documents, establish the repository, resolve conflicting requirements, and document the architecture.
+
+Phase 2: Configure the development environment, PostgreSQL, AWS read-only access and S3 storage.
+
+Phase 3: Implement and test AWS collectors and the common data schema.
+
+Phase 4: Obtain public datasets, generate documented synthetic data where necessary, and build reproducible training pipelines.
+
+Phase 5: Train and evaluate Prophet, XGBoost and Isolation Forest independently.
+
+Phase 6: Implement SHAP explanations, recommendation generation and cost-saving estimates.
+
+Phase 7: Implement FastAPI endpoints, PostgreSQL persistence and the React dashboard.
+
+Phase 8: Implement MCP tools, human approval, notification integrations and sandbox remediation.
+
+Phase 9: Run integration, security and end-to-end tests; containerize the application; document setup and deployment.
+
+## Mandatory development rules
+
+- Inspect the existing repository before changing files.
+- Preserve working code and existing requirements.
+- Implement features in small, testable increments.
+- Never fabricate AWS credentials, API keys, dataset URLs or benchmark results.
+- Never use production credentials or modify production resources during development.
+- Do not hard-code credentials or expose them in frontend code.
+- Provide .env.example, dependency manifests, database migrations, tests and setup instructions.
+- Clearly identify any service, account connection, permission or dataset that requires human setup.
+- Ask for approval before provisioning chargeable AWS infrastructure or enabling live remediation.
+- Report completed work, test results, remaining work, assumptions and blockers accurately.
+
+## Completion criteria
+
+The project is complete only when the documented features are implemented and tested, the models have reproducible evaluation results, the dashboard communicates with the backend, AWS integrations work with authorized credentials, and the approval-controlled remediation workflow passes sandbox tests.
+
+Start by inspecting the source documents and repository. Produce an implementation checklist and dependency map, then implement Phase 1 before proceeding.
+
+## 15. Final implementation checklist
+
+Use this checklist to track your progress. The controls let you mark items as you complete them.
+
+## Project progress
+
+### 0/20
+
+1\. Requirements and environment
+
+Resolve the IaC versus MCP requirement with the project guide
+
+Install Python, Node.js, Docker, Git and PostgreSQL
+
+Create the repository and .env.example
+
+Set AWS budget alerts and configure secure development access
+
+2\. Data collection
+
+Create S3 storage and configure CUR 2.0
+
+Collect CloudWatch metrics using Boto3
+
+Download NAB and inspect the DoW dataset
+
+Build business KPI and synthetic attack datasets
+
+Validate and normalize all three data classes
+
+3\. Machine learning
+
+Train and evaluate Prophet
+
+Train and evaluate XGBoost
+
+Train and evaluate Isolation Forest
+
+Implement SHAP and recommendation explanations
+
+Save model artifacts and experiment metrics
+
+4\. Application and integration
+
+Create PostgreSQL tables and FastAPI endpoints
+
+Build the React dashboards
+
+Implement alerts and the what-if simulator
+
+Implement MCP tools and approval controls
+
+Test remediation using disposable AWS resources
+
+Complete end-to-end, security and deployment tests
+
+Copy checklistReset checklist
+
+## My recommendation: what you should do first
+
+Do not begin by creating every AWS service, training every model, and building the frontend simultaneously.
+
+Start with these three deliverables:
+
+1. A working AWS data collector that produces valid billing and CloudWatch datasets.
+2. A reproducible local training pipeline for Prophet, XGBoost and Isolation Forest.
+3. A FastAPI endpoint that returns real predictions from saved model artifacts.
+
+Once those three work, connect them to the database and dashboard. Add MCP, the conversational assistant and approved remediation after the data and predictions are reliable.
+
+The key to completing this project successfully is to establish one end-to-end working path first: collect real data → process it → generate a prediction → explain it → display it → obtain approval → execute a controlled action in a sandbox.
+
+That will give you a verifiable foundation for the full CloudSense AI system, rather than a collection of disconnected components.

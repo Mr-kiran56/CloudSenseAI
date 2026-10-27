@@ -1,0 +1,9 @@
+changepoint_prior_scale,seasonality_prior_scale,seasonality_mode,changepoint_range,mean_MAPE_select
+0.2,1.0,multiplicative,0.9,8.727485592059226
+0.2,10.0,multiplicative,0.9,8.738974682930206
+0.05,10.0,multiplicative,0.9,9.221135569764044
+0.05,1.0,multiplicative,0.9,9.222439363128341
+0.2,1.0,additive,0.9,9.233230203763195
+0.2,10.0,additive,0.9,9.240206979401952
+0.05,10.0,additive,0.9,9.308597472312321
+0.05,1.0,additive,0.9,9.309120584084967

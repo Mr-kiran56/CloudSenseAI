@@ -44,27 +44,28 @@
     --sidebar-w-collapsed: 72px;
   }
 
+  :root.dark,
   .dark {
-    --cs-bg: #202124;
-    --cs-surface: #292a2d;
-    --cs-elevated: #303134;
-    --cs-muted: #3c4043;
-    --cs-line: #3c4043;
-    --cs-line-strong: #5f6368;
-    --cs-ink: #e8eaed;
-    --cs-ink-2: #dadce0;
-    --cs-ink-3: #9aa0a6;
-    --cs-brand: #8ab4f8;
-    --cs-brand-hover: #aecbfa;
-    --cs-brand-soft: #174ea6;
-    --cs-ok: #81c995;
-    --cs-ok-soft: #0d652d;
-    --cs-warn: #fdd663;
-    --cs-warn-soft: #614a00;
-    --cs-crit: #f28b82;
-    --cs-crit-soft: #8c1d18;
-    --cs-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.4);
-    --cs-shadow-md: 0 4px 12px rgb(0 0 0 / 0.45);
+    --cs-bg: #0b0f19;
+    --cs-surface: #111827;
+    --cs-elevated: #1e293b;
+    --cs-muted: #1e293b;
+    --cs-line: #1f293d;
+    --cs-line-strong: #334155;
+    --cs-ink: #f8fafc;
+    --cs-ink-2: #cbd5e1;
+    --cs-ink-3: #94a3b8;
+    --cs-brand: #3b82f6;
+    --cs-brand-hover: #60a5fa;
+    --cs-brand-soft: rgba(59, 130, 246, 0.15);
+    --cs-ok: #10b981;
+    --cs-ok-soft: rgba(16, 185, 129, 0.15);
+    --cs-warn: #f59e0b;
+    --cs-warn-soft: rgba(245, 158, 11, 0.15);
+    --cs-crit: #f43f5e;
+    --cs-crit-soft: rgba(244, 63, 94, 0.15);
+    --cs-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.4);
+    --cs-shadow-md: 0 12px 24px -4px rgb(0 0 0 / 0.5);
   }
 
   html,
@@ -75,7 +76,7 @@
 
   body {
     margin: 0;
-    background: #ffffff;
+    background: var(--cs-bg);
     color: var(--cs-ink);
     font-family: var(--font-sans);
     font-size: 14px;
@@ -130,6 +131,16 @@
 }
 ::-webkit-scrollbar-track {
   background: transparent;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+.no-scrollbar {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
 }
 
 .cs-skeleton {

@@ -1,0 +1,13 @@
+{
+ "01_total_cost": "Total daily cost",
+ "02_services": "Cost by service and share",
+ "03_profiles": "Weekday / day-of-month profile",
+ "04_stl": "STL decomposition",
+ "05_acf_pacf": "ACF/PACF",
+ "06_cost_vs_requests": "Cost vs traffic",
+ "07_monthly_sawtooth": "Monthly pattern from tiered pricing",
+ "08_missing": "Missing-date map",
+ "11_holdout_forecast": "Hold-out forecast vs actual",
+ "12_residuals": "Hold-out residuals",
+ "13_next_90d": "Forecast for the next 90 days"
+}

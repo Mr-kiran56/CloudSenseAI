@@ -5,13 +5,37 @@ import { ShapFeatureChart } from '../components/ui/ShapFeatureChart';
 import { Skeleton } from '../components/ui/Skeleton';
 import { apiService } from '../services/api';
 import { UnitEconomicsMetric } from '../types';
-import { PieChart, Sparkles, TrendingUp, Users, Zap, Layers, ArrowUpRight, ArrowDownRight } from 'lucide-react';
-import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from 'recharts';
+import {
+  PieChart,
+  Sparkles,
+  TrendingUp,
+  Users,
+  Zap,
+  Layers,
+  ArrowUpRight,
+  ArrowDownRight,
+  Database,
+  Cpu,
+  ShieldCheck,
+  SearchCheck,
+} from 'lucide-react';
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  Legend,
+} from 'recharts';
+import { useNavigate } from 'react-router-dom';
 
 export const UnitEconomicsPage: React.FC = () => {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [metrics, setMetrics] = useState<UnitEconomicsMetric[]>([]);
-  const [selectedMetricId, setSelectedMetricId] = useState<string>('ue_cost_per_active_user');
+  const [selectedMetricId, setSelectedMetricId] = useState<string>('');
 
   useEffect(() => {
     async function loadData() {
@@ -19,6 +43,9 @@ export const UnitEconomicsPage: React.FC = () => {
       try {
         const res = await apiService.getUnitEconomics();
         setMetrics(res.data);
+        if (res.data.length > 0) {
+          setSelectedMetricId(res.data[0].id);
+        }
       } catch (err) {
         console.error('Failed to load unit economics:', err);
       } finally {
@@ -28,48 +55,47 @@ export const UnitEconomicsPage: React.FC = () => {
     loadData();
   }, []);
 
-  if (loading) return <Skeleton className="h-96 w-full" />;
+  if (loading || metrics.length === 0) return <Skeleton className="h-96 w-full" />;
 
   const activeMetric = metrics.find((m) => m.id === selectedMetricId) || metrics[0];
 
   const trendData = [
-    { month: 'May', unitCost: activeMetric.currentUnitCost * 1.25, volume: activeMetric.kpiVolume * 0.7 },
-    { month: 'Jun', unitCost: activeMetric.currentUnitCost * 1.15, volume: activeMetric.kpiVolume * 0.8 },
-    { month: 'Jul', unitCost: activeMetric.currentUnitCost * 1.08, volume: activeMetric.kpiVolume * 0.9 },
-    { month: 'Aug', unitCost: activeMetric.currentUnitCost * 1.02, volume: activeMetric.kpiVolume * 0.95 },
-    { month: 'Sep (Current)', unitCost: activeMetric.currentUnitCost, volume: activeMetric.kpiVolume },
-    { month: 'Oct (Predicted)', unitCost: activeMetric.predictedUnitCost, volume: activeMetric.kpiVolume * 1.15 },
+    { month: 'Day -7', unitCost: Number((activeMetric.currentUnitCost * 1.15).toFixed(4)), volume: Math.round(activeMetric.kpiVolume * 0.8) },
+    { month: 'Day -5', unitCost: Number((activeMetric.currentUnitCost * 1.08).toFixed(4)), volume: Math.round(activeMetric.kpiVolume * 0.88) },
+    { month: 'Day -3', unitCost: Number((activeMetric.currentUnitCost * 1.02).toFixed(4)), volume: Math.round(activeMetric.kpiVolume * 0.94) },
+    { month: 'Day -1', unitCost: Number((activeMetric.currentUnitCost * 0.98).toFixed(4)), volume: Math.round(activeMetric.kpiVolume * 0.98) },
+    { month: 'Today', unitCost: Number(activeMetric.currentUnitCost.toFixed(4)), volume: activeMetric.kpiVolume },
+    { month: 'Tomorrow (XGBoost)', unitCost: Number(activeMetric.predictedUnitCost.toFixed(4)), volume: Math.round(activeMetric.kpiVolume * 1.08) },
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-sans">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-slate-200 dark:border-slate-800">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-[var(--cs-line)]">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-[22px] font-normal tracking-tight text-[var(--cs-ink)]">
-              Business-Aware Unit Economics
+            <h1 className="text-2xl font-bold tracking-tight text-[var(--cs-ink)]">
+              Business-Aware Unit Economics & SHAP
             </h1>
-            <Badge variant="ai" icon>XGBoost Unit Efficiency Model</Badge>
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Connecting raw AWS compute expenditure to core business growth KPIs and tenant density metrics
+          <p className="text-xs text-[var(--cs-ink-3)] mt-1">
+            Correlating raw AWS cloud costs with API throughput, active users, and transaction volume using XGBoost and TreeSHAP.
           </p>
         </div>
 
         {/* Metric Selector Tabs */}
-        <div className="flex bg-slate-200 dark:bg-slate-800 p-0.5 rounded-md text-xs font-medium">
+        <div className="flex bg-[var(--cs-muted)] border border-[var(--cs-line)] p-1 rounded-lg text-xs font-medium">
           {metrics.map((m) => (
             <button
               key={m.id}
               onClick={() => setSelectedMetricId(m.id)}
-              className={`px-3 py-1.5 rounded transition-colors ${
+              className={`px-3 py-1.5 rounded-md transition ${
                 selectedMetricId === m.id
-                  ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-2xs font-semibold'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                  ? 'bg-blue-600 text-white shadow-md font-semibold'
+                  : 'text-[var(--cs-ink-3)] hover:text-[var(--cs-ink)]'
               }`}
             >
-              {m.name}
+              {m.name.replace(' Unit Cost', '')}
             </button>
           ))}
         </div>
@@ -77,38 +103,38 @@ export const UnitEconomicsPage: React.FC = () => {
 
       {/* KPI Cards for Selected Metric */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <span className="text-xs text-slate-500">Current Unit Cost</span>
-          <div className="text-2xl font-bold font-mono text-slate-900 dark:text-slate-100 mt-1">
-            ${activeMetric.currentUnitCost.toFixed(2)} <span className="text-xs font-sans text-slate-400">/ {activeMetric.unitLabel}</span>
+        <Card className="p-5">
+          <span className="text-xs font-semibold text-[var(--cs-ink-3)] uppercase tracking-wider">Current Unit Cost</span>
+          <div className="text-2xl font-bold font-mono text-[var(--cs-ink)] mt-1.5">
+            ${activeMetric.currentUnitCost.toFixed(4)} <span className="text-xs font-sans text-[var(--cs-ink-3)] font-normal">/ {activeMetric.unitLabel}</span>
           </div>
-          <p className="text-[11px] text-emerald-600 font-semibold mt-1">Targeting ${activeMetric.predictedUnitCost.toFixed(2)}</p>
+          <p className="text-xs text-emerald-600 dark:text-emerald-400 font-mono mt-1">Tomorrow: ${activeMetric.predictedUnitCost.toFixed(4)}</p>
         </Card>
 
-        <Card>
-          <span className="text-xs text-slate-500">Business Volume</span>
-          <div className="text-2xl font-bold font-mono text-slate-900 dark:text-slate-100 mt-1">
-            {activeMetric.kpiVolume.toLocaleString()}
+        <Card className="p-5">
+          <span className="text-xs font-semibold text-[var(--cs-ink-3)] uppercase tracking-wider">Business KPI Volume</span>
+          <div className="text-2xl font-bold font-mono text-[var(--cs-ink)] mt-1.5">
+            {(activeMetric.kpiVolume ?? 0).toLocaleString()}
           </div>
-          <p className="text-[11px] text-emerald-600 font-semibold mt-1 flex items-center gap-0.5">
-            <ArrowUpRight className="w-3 h-3" />+{activeMetric.kpiGrowthPercent}% growth
+          <p className="text-xs text-emerald-600 dark:text-emerald-400 font-mono mt-1 flex items-center gap-0.5">
+            <ArrowUpRight className="w-3.5 h-3.5" />+{activeMetric.kpiGrowthPercent}% volume expansion
           </p>
         </Card>
 
-        <Card>
-          <span className="text-xs text-slate-500">Cloud Cost Growth</span>
-          <div className="text-2xl font-bold font-mono text-slate-900 dark:text-slate-100 mt-1">
-            +{activeMetric.costGrowthPercent}%
+        <Card className="p-5">
+          <span className="text-xs font-semibold text-[var(--cs-ink-3)] uppercase tracking-wider">Cloud Cost Growth</span>
+          <div className="text-2xl font-bold font-mono text-[var(--cs-ink)] mt-1.5">
+            {activeMetric.costGrowthPercent >= 0 ? '+' : ''}{activeMetric.costGrowthPercent}%
           </div>
-          <p className="text-[11px] text-slate-400 mt-1">Outpaced by volume growth</p>
+          <p className="text-xs text-[var(--cs-ink-3)] font-mono mt-1">Normalized vs 7-day average</p>
         </Card>
 
-        <Card>
-          <span className="text-xs text-slate-500">Efficiency Ratio</span>
-          <div className="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-1">
+        <Card className="p-5">
+          <span className="text-xs font-semibold text-[var(--cs-ink-3)] uppercase tracking-wider">Efficiency Ratio</span>
+          <div className="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-1.5">
             {activeMetric.efficiencyRatio}x
           </div>
-          <p className="text-[11px] text-emerald-500 font-semibold mt-1">Highly scalable architecture</p>
+          <p className="text-xs text-emerald-600 dark:text-emerald-400 font-mono mt-1">High tenant amortization</p>
         </Card>
       </div>
 
@@ -117,23 +143,30 @@ export const UnitEconomicsPage: React.FC = () => {
         {/* Unit Cost Trend Chart (2 Cols) */}
         <Card className="lg:col-span-2">
           <CardHeader
-            title={`${activeMetric.name} Trend & XGBoost Prediction`}
-            subtitle="Comparing monthly unit cost progression against total business volume"
+            title={`${activeMetric.name} Progression & Forward Inference`}
+            subtitle="Comparing recent unit cost curve against business volume growth"
           />
 
-          <div className="h-80 w-full pt-2">
+          <div className="h-80 w-full pt-4">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={trendData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.2} />
-                <XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="#64748b" />
-                <YAxis yAxisId="left" tick={{ fontSize: 11 }} stroke="#64748b" tickFormatter={(v) => `$${v}`} />
-                <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} stroke="#64748b" />
+              <LineChart data={trendData} margin={{ top: 10, right: 12, left: -10, bottom: 0 }}>
+                <CartesianGrid stroke="var(--cs-line)" strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="month" tick={{ fontSize: 11, fill: 'var(--cs-ink-3)' }} stroke="var(--cs-line)" />
+                <YAxis yAxisId="left" tick={{ fontSize: 11, fill: 'var(--cs-ink-3)' }} stroke="var(--cs-line)" tickFormatter={(v) => `$${v}`} />
+                <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11, fill: 'var(--cs-ink-3)' }} stroke="var(--cs-line)" />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', fontSize: '12px', color: '#fff' }}
+                  contentStyle={{
+                    backgroundColor: 'var(--cs-surface)',
+                    border: '1px solid var(--cs-line)',
+                    borderRadius: 8,
+                    fontSize: 12,
+                    color: 'var(--cs-ink)',
+                    boxShadow: 'var(--cs-shadow-md)',
+                  }}
                 />
-                <Legend wrapperStyle={{ fontSize: '12px' }} />
-                <Line yAxisId="left" type="monotone" dataKey="unitCost" name={`Unit Cost (${activeMetric.unitLabel})`} stroke="#3b82f6" strokeWidth={3} dot={{ r: 4 }} />
-                <Line yAxisId="right" type="monotone" dataKey="volume" name="Business KPI Volume" stroke="#10b981" strokeWidth={2} strokeDasharray="4 4" />
+                <Legend wrapperStyle={{ fontSize: 12, paddingTop: 10 }} />
+                <Line yAxisId="left" type="monotone" dataKey="unitCost" name={`Unit Cost (${activeMetric.unitLabel})`} stroke="#3b82f6" strokeWidth={3} dot={{ r: 4, fill: '#3b82f6' }} />
+                <Line yAxisId="right" type="monotone" dataKey="volume" name="Business KPI Volume" stroke="#10b981" strokeWidth={2} strokeDasharray="4 4" dot={{ r: 3, fill: '#10b981' }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -142,17 +175,17 @@ export const UnitEconomicsPage: React.FC = () => {
         {/* XGBoost Feature Importance Attribution (1 Col) */}
         <div className="space-y-4">
           <ShapFeatureChart
-            title="XGBoost Unit Cost Attribution"
+            title="TreeSHAP Feature Driver Forces"
             features={activeMetric.shapFeatures}
           />
 
-          <Card>
-            <div className="flex items-center gap-2 font-semibold text-xs text-slate-900 dark:text-slate-100 mb-2">
-              <Sparkles className="w-4 h-4 text-indigo-500" />
-              <span>AI Unit Cost Insight</span>
+          <Card className="p-5">
+            <div className="flex items-center gap-2 font-semibold text-xs text-[var(--cs-ink)] uppercase tracking-wider mb-2">
+              <SearchCheck className="w-4 h-4 text-blue-500" />
+              <span>Recommended Next Investigation</span>
             </div>
-            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-              Your unit cost reduced by <strong>14.2%</strong> this quarter as user volume expanded 24.2%. EC2 AutoScaling spot integration had the single highest positive impact (+0.42 SHAP score) in lowering unit cost per active user.
+            <p className="text-xs text-[var(--cs-ink-2)] leading-relaxed">
+              {activeMetric.recommendedAction || "Audit Auto Scaling cooldown policies, inspect rapid container churn and ECS task restarts."}
             </p>
           </Card>
         </div>

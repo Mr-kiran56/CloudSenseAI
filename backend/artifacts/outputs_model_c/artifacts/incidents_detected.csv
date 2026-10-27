@@ -1,0 +1,14 @@
+incident_id,start,n_windows,peak_score,triage,reasons,true,severity,true_class
+ALERT000,2026-08-13 03:05:00,28,204.32376386051357,likely_legitimate_traffic,surge with normal IP diversity during a promotion,operational_anomaly,low,operational
+ALERT001,2026-08-13 12:45:00,1,11.8096176806547,likely_legitimate_traffic,surge with normal IP diversity during a promotion,false_alert,low,false_alert
+ALERT002,2026-08-14 09:50:00,48,151.1531068460177,dow_candidate,low IP diversity / concentrated sources with traffic or invocation surge,dow_candidate,high,dow_candidate
+ALERT003,2026-08-15 03:05:00,32,747.5767502292161,likely_legitimate_traffic,surge with normal IP diversity during a promotion,dow_candidate,low,dow_candidate
+ALERT004,2026-08-15 20:10:00,1,14.167897565418963,likely_legitimate_traffic,surge with normal IP diversity during a promotion,false_alert,low,false_alert
+ALERT005,2026-08-16 04:35:00,7,94.08735849848676,operational,errors/latency/CPU/memory/storage/fleet deviation with normal traffic quality,operational_anomaly,medium,operational
+ALERT006,2026-08-17 11:30:00,73,40.99633958990018,dow_candidate,low IP diversity / concentrated sources with traffic or invocation surge,dow_candidate,high,dow_candidate
+ALERT007,2026-08-18 05:50:00,17,28.62091272063594,operational,errors/latency/CPU/memory/storage/fleet deviation with normal traffic quality,operational_anomaly,medium,operational
+ALERT008,2026-08-19 06:15:00,35,45.954790928429844,needs_review,no rule matched,dow_candidate,low,dow_candidate
+ALERT009,2026-08-21 03:45:00,41,24.327844812044887,operational,errors/latency/CPU/memory/storage/fleet deviation with normal traffic quality,operational_anomaly,medium,operational
+ALERT010,2026-08-22 08:45:00,34,144.44832378076154,dow_candidate,low IP diversity / concentrated sources with traffic or invocation surge,dow_candidate,high,dow_candidate
+ALERT011,2026-08-23 11:00:00,37,58.89259394887371,dow_candidate,low IP diversity / concentrated sources with traffic or invocation surge; invocation/duration surge from few sources,dow_confirmed,high,dow_candidate
+ALERT012,2026-08-26 02:15:00,37,50.52443505676134,dow_candidate,low IP diversity / concentrated sources with traffic or invocation surge; invocation/duration surge from few sources,dow_confirmed,high,dow_candidate

@@ -176,7 +176,7 @@ export const RecommendationDetailPage: React.FC = () => {
             </div>
             <div>
               <span className="text-slate-400 block text-[10px]">ANNUAL SAVINGS ROI</span>
-              <span className="text-lg font-bold text-slate-900 dark:text-slate-100">+${recommendation.annualSavings.toLocaleString()}/yr</span>
+              <span className="text-lg font-bold text-slate-900 dark:text-slate-100">+${(recommendation.annualSavings ?? 0).toLocaleString()}/yr</span>
             </div>
           </div>
         </div>

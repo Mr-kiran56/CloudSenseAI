@@ -1,0 +1,125 @@
+{
+  "variant": "P3_tuned",
+  "params": {
+    "changepoint_prior_scale": 0.2,
+    "seasonality_prior_scale": 1.0,
+    "seasonality_mode": "multiplicative",
+    "changepoint_range": 0.9
+  },
+  "regressors": [],
+  "mask": "auto",
+  "monthly": true,
+  "cost_basis": "net unblended cost, USD",
+  "missing_dates": [
+    "2024-03-09",
+    "2025-01-17",
+    "2025-08-30",
+    "2026-02-02"
+  ],
+  "train_range": [
+    "2024-01-01",
+    "2026-09-30"
+  ],
+  "holdout_start": "2026-07-03",
+  "cfg": {
+    "seed": 42,
+    "holdout_days": 90,
+    "cv_initial": 540,
+    "cv_period": 90,
+    "cv_horizon": 90,
+    "horizons": [
+      7,
+      30,
+      90
+    ],
+    "select_h": 30,
+    "monthly_fourier": 5,
+    "changepoint_range": 0.9,
+    "grid": {
+      "changepoint_prior_scale": [
+        0.05,
+        0.2
+      ],
+      "seasonality_prior_scale": [
+        1.0,
+        10.0
+      ],
+      "seasonality_mode": [
+        "additive",
+        "multiplicative"
+      ]
+    },
+    "outlier_z": 4.0
+  },
+  "holdout_metrics": {
+    "h7": {
+      "MAPE": 2.5899349930525792,
+      "sMAPE": 2.5329567719433865,
+      "RMSE": 14.968084062265238,
+      "MAE": 10.533843969751258,
+      "bias": 4.9493827470664655,
+      "R2": 0.538854987969058,
+      "coverage80": 71.42857142857143,
+      "interval_width": 31.43058230236317
+    },
+    "h30": {
+      "MAPE": 4.76966167849123,
+      "sMAPE": 5.183577174678156,
+      "RMSE": 75.50404484666971,
+      "MAE": 26.42468573427781,
+      "bias": -7.806470050600535,
+      "R2": 0.14293209532598317,
+      "coverage80": 63.33333333333333,
+      "interval_width": 31.403584503747144
+    },
+    "h90": {
+      "MAPE": 9.54448338780065,
+      "sMAPE": 11.307815824966845,
+      "RMSE": 126.62303649493423,
+      "MAE": 61.85393326098636,
+      "bias": -52.956146511222656,
+      "R2": -0.15158221366621127,
+      "coverage80": 45.55555555555556,
+      "interval_width": 32.226877190372804
+    },
+    "snaive7_h7": {
+      "MAPE": 20.880789161372036,
+      "sMAPE": 16.461404194585874,
+      "RMSE": 152.50646552181695,
+      "MAE": 86.09088571428572,
+      "bias": 37.49757142857142,
+      "R2": -46.87200314849444
+    },
+    "snaive7_h30": {
+      "MAPE": 18.440879372627037,
+      "sMAPE": 14.837441823411684,
+      "RMSE": 165.43911569861987,
+      "MAE": 82.82802666666666,
+      "bias": 31.624400000000016,
+      "R2": -3.1148233554485163
+    },
+    "snaive7_h90": {
+      "MAPE": 22.581614563964884,
+      "sMAPE": 21.496768140430483,
+      "RMSE": 186.00870770618957,
+      "MAE": 118.96651333333332,
+      "bias": -22.258953333333334,
+      "R2": -1.4850552662675809
+    },
+    "oracle_regs_h90_NOT_DEPLOYABLE": {
+      "MAPE": 5.192553249092339,
+      "sMAPE": 5.730326814078623,
+      "RMSE": 74.40240103957144,
+      "MAE": 32.14521609187312,
+      "bias": -26.343934837796816,
+      "R2": 0.6024027220896084
+    }
+  },
+  "versions": {
+    "python": "3.13.16",
+    "pandas": "2.2.3",
+    "numpy": "2.1.3"
+  },
+  "refit_on": "all data incl. hold-out",
+  "note": "hold-out metrics come from the pre-hold-out fit"
+}

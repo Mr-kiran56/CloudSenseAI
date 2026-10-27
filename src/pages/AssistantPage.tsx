@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { AssistantMessage } from '../types';
+import { apiService } from '../services/api';
 import { mockAssistantInitialMessages, mockRecommendations } from '../services/mockData';
 import {
   Send,
@@ -168,7 +169,7 @@ export const AssistantPage: React.FC = () => {
     );
   };
 
-  const handleSendMessage = (textToSend?: string) => {
+  const handleSendMessage = async (textToSend?: string) => {
     const query = (textToSend || inputQuery).trim();
     if (!query || isGenerating) return;
 
@@ -183,12 +184,28 @@ export const AssistantPage: React.FC = () => {
     updateActive(next, active.messages.length < 2 ? query.slice(0, 36) : undefined);
     setInputQuery('');
     setIsGenerating(true);
-    setThinkingSteps(['Reading AWS telemetry', 'Running models', 'Drafting an explained answer']);
+    setThinkingSteps(['Reading AWS telemetry', 'Consulting Prophet & XGBoost models', 'Validating MCP guardrails']);
 
-    window.setTimeout(() => setThinkingSteps((s) => s.slice(1)), 280);
-    window.setTimeout(() => setThinkingSteps((s) => s.slice(1)), 520);
+    try {
+      const backendRes = await apiService.queryAssistant(query);
+      const citations = (backendRes.citations || []).map((c: string) => ({
+        label: c,
+        link: c.toLowerCase().includes('forecast') ? '/cost' : c.toLowerCase().includes('dow') ? '/anomalies' : '/dashboard',
+      }));
 
-    window.setTimeout(() => {
+      const aiMsg: AssistantMessage = {
+        id: `msg_${Math.random().toString(36).slice(2, 7)}`,
+        sender: 'assistant',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        text: backendRes.response || 'I have analyzed your query across all 3 models.',
+        citations,
+        toolCalls: [
+          { tool: 'cloudsense.ml_inference', args: 'all_models=true', status: 'completed' },
+          { tool: 'mcp.least_privilege_check', args: 'role=read_only', status: 'completed' },
+        ],
+      };
+      updateActive([...next, aiMsg]);
+    } catch {
       const payload = replyFor(query);
       const aiMsg: AssistantMessage = {
         id: `msg_${Math.random().toString(36).slice(2, 7)}`,
@@ -197,9 +214,10 @@ export const AssistantPage: React.FC = () => {
         ...payload,
       };
       updateActive([...next, aiMsg]);
+    } finally {
       setIsGenerating(false);
       setThinkingSteps([]);
-    }, 900);
+    }
   };
 
   const newChat = () => {
@@ -226,7 +244,7 @@ export const AssistantPage: React.FC = () => {
 
   return (
     <div className="-mx-4 -my-5 md:-mx-6 md:-my-6 h-[calc(100vh-56px)] flex overflow-hidden bg-transparent">
-      <aside className="hidden lg:flex w-[280px] flex-col border-r border-[var(--cs-line)] bg-white/70 backdrop-blur-md">
+      <aside className="hidden lg:flex w-[280px] flex-col border-r border-[var(--cs-line)] bg-[var(--cs-surface)]/80 backdrop-blur-md">
         <div className="p-3">
           <Button variant="primary" size="sm" className="w-full justify-center rounded-full" icon={<Plus className="w-4 h-4" />} onClick={newChat}>
             New chat
@@ -240,8 +258,8 @@ export const AssistantPage: React.FC = () => {
               onClick={() => setActiveId(t.id)}
               className={`w-full text-left rounded-xl px-3 py-2.5 transition-colors ${
                 t.id === activeId
-                  ? 'bg-[#e8f0fe] text-[#174ea6]'
-                  : 'hover:bg-white text-[var(--cs-ink-2)]'
+                  ? 'bg-[var(--cs-brand-soft)] text-[var(--cs-brand)]'
+                  : 'hover:bg-[var(--cs-muted)] text-[var(--cs-ink-2)]'
               }`}
             >
               <p className="text-[13px] font-medium truncate">{t.title}</p>
@@ -250,7 +268,7 @@ export const AssistantPage: React.FC = () => {
           ))}
         </div>
         <button
-          className="m-3 inline-flex items-center gap-2 rounded-xl px-3 py-2 text-[12px] text-[var(--cs-ink-3)] hover:bg-white"
+          className="m-3 inline-flex items-center gap-2 rounded-xl px-3 py-2 text-[12px] text-[var(--cs-ink-3)] hover:bg-[var(--cs-muted)]"
           onClick={() => {
             setThreads((prev) => prev.filter((t) => t.id === activeId));
             addToast({ type: 'info', title: 'History cleared', message: 'Older threads were removed from this session.' });
@@ -261,15 +279,15 @@ export const AssistantPage: React.FC = () => {
       </aside>
 
       <section className="flex-1 flex flex-col min-w-0">
-        <header className="px-4 md:px-6 py-3 border-b border-[var(--cs-line)] bg-white flex items-center justify-between gap-3 shrink-0">
+        <header className="px-4 md:px-6 py-3 border-b border-[var(--cs-line)] bg-[var(--cs-surface)] flex items-center justify-between gap-3 shrink-0">
           <div className="flex items-center gap-3 min-w-0">
             <div className="cs-avatar-ring p-[2px] rounded-full">
-              <div className="h-9 w-9 rounded-full bg-white grid place-items-center">
+              <div className="h-9 w-9 rounded-full bg-[var(--cs-surface)] grid place-items-center">
                 <Cloud className="w-4 h-4 text-[#4285F4]" />
               </div>
             </div>
             <div className="min-w-0">
-              <h2 className="text-[14px] font-semibold truncate">CloudSense copilot</h2>
+              <h2 className="text-[14px] font-semibold text-[var(--cs-ink)] truncate">CloudSense copilot</h2>
               <p className="text-[11px] text-[var(--cs-ink-3)]">FinOps answers with citations — never silent AWS changes</p>
             </div>
           </div>
@@ -291,7 +309,7 @@ export const AssistantPage: React.FC = () => {
                     </div>
                   ) : (
                     <div className="cs-avatar-ring p-[2px] rounded-full h-8 w-8 shrink-0 mt-5">
-                      <div className="h-full w-full rounded-full bg-white grid place-items-center">
+                      <div className="h-full w-full rounded-full bg-[var(--cs-surface)] grid place-items-center">
                         <Sparkles className="w-3.5 h-3.5 text-[#EA4335]" />
                       </div>
                     </div>
@@ -308,7 +326,7 @@ export const AssistantPage: React.FC = () => {
                         {msg.toolCalls.map((tool) => (
                           <span
                             key={tool.tool}
-                            className="inline-flex items-center gap-1 rounded-full bg-white border border-[var(--cs-line)] px-2 py-0.5 font-mono text-[10px] text-[var(--cs-ink-3)]"
+                            className="inline-flex items-center gap-1 rounded-full bg-[var(--cs-surface)] border border-[var(--cs-line)] px-2 py-0.5 font-mono text-[10px] text-[var(--cs-ink-3)]"
                           >
                             <span className="h-1.5 w-1.5 rounded-full bg-[#34A853]" />
                             {tool.tool}
@@ -321,7 +339,7 @@ export const AssistantPage: React.FC = () => {
                       className={
                         isUser
                           ? 'rounded-2xl rounded-tr-md bg-[#1a73e8] text-white px-3.5 py-2.5 shadow-[0_8px_20px_rgba(26,115,232,0.25)]'
-                          : 'w-full rounded-2xl rounded-tl-md bg-white px-3.5 py-2.5 border border-white shadow-[0_8px_28px_rgba(60,64,67,0.08)]'
+                          : 'w-full rounded-2xl rounded-tl-md bg-[var(--cs-surface)] px-3.5 py-2.5 border border-[var(--cs-line)] cs-shadow'
                       }
                     >
                       {isUser ? (
@@ -337,7 +355,7 @@ export const AssistantPage: React.FC = () => {
                           <button
                             key={c.link}
                             onClick={() => navigate(c.link)}
-                            className="inline-flex items-center gap-1 rounded-full bg-white border border-[var(--cs-line)] px-2.5 py-1 text-[11px] text-[#174ea6] hover:bg-[#e8f0fe]"
+                            className="inline-flex items-center gap-1 rounded-full bg-[var(--cs-surface)] border border-[var(--cs-line)] px-2.5 py-1 text-[11px] text-[var(--cs-brand)] hover:bg-[var(--cs-brand-soft)]"
                           >
                             {c.label}
                             <ExternalLink className="w-3 h-3" />
@@ -347,8 +365,8 @@ export const AssistantPage: React.FC = () => {
                     )}
 
                     {msg.approvalTrigger && (
-                      <div className="mt-3 rounded-2xl border border-[#fde293] bg-[#fef7e0] p-3">
-                        <div className="flex items-center gap-2 text-[#b06000] text-[12px] font-semibold">
+                      <div className="mt-3 rounded-2xl border border-[var(--cs-warn)]/30 bg-[var(--cs-warn-soft)] p-3">
+                        <div className="flex items-center gap-2 text-[var(--cs-warn)] text-[12px] font-semibold">
                           <CheckSquare className="w-4 h-4" />
                           Prepared for human approval
                         </div>
@@ -373,11 +391,11 @@ export const AssistantPage: React.FC = () => {
             {isGenerating && (
               <div className="flex gap-3">
                 <div className="cs-avatar-ring p-[2px] rounded-full h-9 w-9 shrink-0">
-                  <div className="h-full w-full rounded-full bg-white grid place-items-center">
+                  <div className="h-full w-full rounded-full bg-[var(--cs-surface)] grid place-items-center">
                     <Sparkles className="w-4 h-4 text-[#4285F4]" />
                   </div>
                 </div>
-                <div className="rounded-2xl bg-white px-4 py-3 shadow-sm border border-white">
+                <div className="rounded-2xl bg-[var(--cs-surface)] px-4 py-3 border border-[var(--cs-line)] cs-shadow">
                   <div className="cs-typing" aria-label="Assistant is thinking">
                     <span />
                     <span />
@@ -401,14 +419,14 @@ export const AssistantPage: React.FC = () => {
                 <button
                   key={p.label}
                   onClick={() => handleSendMessage(p.prompt)}
-                  className="shrink-0 inline-flex items-center gap-2 rounded-full bg-white border border-[var(--cs-line)] px-3 py-1.5 text-[12px] text-[var(--cs-ink-2)] hover:shadow-md"
+                  className="shrink-0 inline-flex items-center gap-2 rounded-full bg-[var(--cs-surface)] border border-[var(--cs-line)] px-3 py-1.5 text-[12px] text-[var(--cs-ink-2)] hover:shadow-md"
                 >
                   <p.icon className="w-3.5 h-3.5" style={{ color: p.color }} />
                   {p.label}
                 </button>
               ))}
             </div>
-            <div className="rounded-3xl bg-white border border-[var(--cs-line)] shadow-[0_12px_40px_rgba(60,64,67,0.12)] p-2 pl-4 flex items-end gap-2">
+            <div className="rounded-3xl bg-[var(--cs-surface)] border border-[var(--cs-line)] cs-shadow-md p-2 pl-4 flex items-end gap-2">
               <button type="button" className="mb-2 text-[var(--cs-ink-3)]" aria-label="Attach context" disabled>
                 <Paperclip className="w-4 h-4" />
               </button>
