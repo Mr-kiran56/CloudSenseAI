@@ -30,9 +30,11 @@ import {
   Legend,
 } from 'recharts';
 import { useNavigate } from 'react-router-dom';
+import { useApp } from '../context/AppContext';
 
 export const UnitEconomicsPage: React.FC = () => {
   const navigate = useNavigate();
+  const { selectedAccount } = useApp();
   const [loading, setLoading] = useState(true);
   const [metrics, setMetrics] = useState<UnitEconomicsMetric[]>([]);
   const [selectedMetricId, setSelectedMetricId] = useState<string>('');
@@ -41,7 +43,7 @@ export const UnitEconomicsPage: React.FC = () => {
     async function loadData() {
       setLoading(true);
       try {
-        const res = await apiService.getUnitEconomics();
+        const res = await apiService.getUnitEconomics(selectedAccount?.accountId);
         setMetrics(res.data);
         if (res.data.length > 0) {
           setSelectedMetricId(res.data[0].id);
@@ -53,9 +55,48 @@ export const UnitEconomicsPage: React.FC = () => {
       }
     }
     loadData();
-  }, []);
+  }, [selectedAccount?.accountId]);
 
-  if (loading || metrics.length === 0) return <Skeleton className="h-96 w-full" />;
+  if (loading) return <Skeleton className="h-96 w-full" />;
+
+  if (metrics.length === 0) {
+    return (
+      <div className="space-y-6 font-sans">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-[var(--cs-line)]">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-[var(--cs-ink)]">
+              Business-Aware Unit Economics & SHAP
+            </h1>
+            <p className="text-xs text-[var(--cs-ink-3)] mt-1">
+              Correlating raw AWS cloud costs with API throughput, active users, and transaction volume using XGBoost and TreeSHAP.
+            </p>
+          </div>
+        </div>
+
+        <Card className="p-12 text-center border-dashed border-[var(--cs-line)]">
+          <PieChart className="w-12 h-12 text-[var(--cs-ink-3)] mx-auto mb-3 opacity-60" />
+          <h3 className="text-base font-semibold text-[var(--cs-ink)]">No Unit Economics Data Yet</h3>
+          <p className="text-xs text-[var(--cs-ink-3)] max-w-lg mx-auto mt-2 leading-relaxed">
+            Unit economics models require business KPI metrics (e.g. daily API invocations, active tenants, payment conversions) correlated against AWS Cost and Usage Reports (CUR).
+          </p>
+          <div className="mt-4 flex items-center justify-center gap-3">
+            <button
+              onClick={() => navigate('/cloud-accounts')}
+              className="px-3.5 py-1.5 rounded-lg bg-[var(--cs-brand)] text-white text-xs font-medium hover:opacity-90 transition"
+            >
+              Configure CUR Ingestion
+            </button>
+            <button
+              onClick={() => navigate('/synthesis-lab')}
+              className="px-3.5 py-1.5 rounded-lg bg-[var(--cs-muted)] border border-[var(--cs-line)] text-xs text-[var(--cs-ink)] font-medium hover:bg-[var(--cs-surface)] transition"
+            >
+              Explore Synthesis Benchmark Lab
+            </button>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   const activeMetric = metrics.find((m) => m.id === selectedMetricId) || metrics[0];
 

@@ -7,6 +7,7 @@ try:
 except ImportError:
     boto3 = None
 from .policies import validate_remediation_policy, generate_action_hash
+from ..core.config import settings
 
 class MCPToolRegistry:
     """Registry of allowable Boto3 operations enforced by the Model Context Protocol server."""
@@ -27,7 +28,7 @@ class MCPToolRegistry:
 
     @staticmethod
     def execute_remediation(action_type: str, resource: Dict[str, Any], parameters: Dict[str, Any], 
-                            approval_token: str, live_execution: bool = False) -> Dict[str, Any]:
+                            approval_token: str, live_execution: bool = False, session: Any = None) -> Dict[str, Any]:
         """Execute state-changing remediation on AWS with audit logging."""
         is_valid, reason = validate_remediation_policy(action_type, resource, parameters)
         if not is_valid:
@@ -44,26 +45,59 @@ class MCPToolRegistry:
             f"[{timestamp}] Pre-flight health checks verified.",
         ]
 
-        # Live Boto3 execution if live_execution is set and boto3 is configured
+        if live_execution and not settings.REMEDIATION_ENABLED:
+            execution_log.append(
+                f"[{timestamp}] Live mutation blocked: REMEDIATION_ENABLED is false. Dry-run only."
+            )
+            return {
+                "success": True,
+                "dry_run": True,
+                "aws_request_id": aws_request_id,
+                "action_type": action_type,
+                "resource_id": target_id,
+                "status": "dry_run",
+                "executed_at": timestamp,
+                "rollback_token": f"rb-{uuid.uuid4().hex[:10]}",
+                "execution_log": execution_log,
+            }
+
         if live_execution and boto3:
             try:
                 region = resource.get("region", "us-east-1")
-                ec2 = boto3.client("ec2", region_name=region)
-                if action_type in ["stop_instance", "stop_idle_ec2"]:
+                if session is not None:
+                    ec2 = session.client("ec2", region_name=region)
+                else:
+                    ec2 = boto3.client("ec2", region_name=region)
+
+                if action_type in ["stop_instance", "stop_idle_instance", "stop_idle_ec2"]:
                     ec2.stop_instances(InstanceIds=[target_id])
                     execution_log.append(f"[{timestamp}] Boto3 EC2: stop_instances issued successfully for {target_id}.")
+                elif action_type in ["terminate_instance", "terminate_idle_instance"]:
+                    ec2.terminate_instances(InstanceIds=[target_id])
+                    execution_log.append(f"[{timestamp}] Boto3 EC2: terminate_instances issued successfully for {target_id}.")
                 elif action_type in ["modify_instance_type", "resize_instance"]:
                     new_type = parameters.get("target_instance_type") or parameters.get("instance_type", "c5.2xlarge")
                     ec2.modify_instance_attribute(InstanceId=target_id, InstanceType={"Value": new_type})
                     execution_log.append(f"[{timestamp}] Boto3 EC2: modify_instance_attribute to {new_type} succeeded for {target_id}.")
-                elif action_type in ["delete_volume", "purge_ebs"]:
+                elif action_type in ["delete_volume", "purge_ebs", "delete_unattached_volume"]:
                     ec2.delete_volume(VolumeId=target_id)
                     execution_log.append(f"[{timestamp}] Boto3 EBS: delete_volume issued successfully for {target_id}.")
                 elif action_type in ["convert_gp2_to_gp3", "modify_volume_type"]:
                     ec2.modify_volume(VolumeId=target_id, VolumeType="gp3")
                     execution_log.append(f"[{timestamp}] Boto3 EBS: modify_volume to gp3 succeeded for {target_id}.")
             except Exception as e:
-                execution_log.append(f"[{timestamp}] Boto3 live execution notice: {str(e)}. Fallback to verified sandbox state transition.")
+                execution_log.append(f"[{timestamp}] Boto3 live execution failed: {e}")
+                return {
+                    "success": False,
+                    "aws_request_id": aws_request_id,
+                    "action_type": action_type,
+                    "resource_id": target_id,
+                    "status": "failed",
+                    "executed_at": timestamp,
+                    "rollback_token": None,
+                    "execution_log": execution_log,
+                    "error": str(e),
+                }
 
         execution_log.extend([
             f"[{timestamp}] State transition completed successfully.",

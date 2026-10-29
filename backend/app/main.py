@@ -50,7 +50,7 @@ async def global_exception_handler(request: Request, exc: Exception):
     logger.error("Unhandled error processing %s: %s", request.url.path, exc, exc_info=True)
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={"detail": "Internal server error occurred in CloudSense AI engine.", "error": str(exc)}
+        content={"detail": "Internal server error occurred in CloudSense AI engine."},
     )
 
 # Mount API Routers

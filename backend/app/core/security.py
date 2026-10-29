@@ -22,8 +22,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     try:
         return pwd_context.verify(plain_password, hashed_password)
     except Exception:
-        # Fallback for plain comparison in demo seed if needed
-        return plain_password == hashed_password
+        return False
 
 def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)

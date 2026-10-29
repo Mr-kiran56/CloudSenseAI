@@ -40,8 +40,25 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [accounts, setAccounts] = useState<AWSAccount[]>(mockAWSAccounts);
-  const [selectedAccount, setSelectedAccount] = useState<AWSAccount>(mockAWSAccounts[0]);
-  const [selectedRegion, setSelectedRegion] = useState<string>('us-east-1');
+  const [selectedAccount, setSelectedAccountState] = useState<AWSAccount>(() => {
+    const savedId = localStorage.getItem('cs_selected_account_id');
+    if (savedId) {
+      const found = mockAWSAccounts.find((a) => a.accountId === savedId || a.id === savedId);
+      if (found) return found;
+    }
+    const nonDemo = mockAWSAccounts.find((a) => !a.isDemo && a.accountId !== 'synthesis-demo');
+    return nonDemo || mockAWSAccounts[0];
+  });
+
+  const setSelectedAccount = (acc: AWSAccount) => {
+    setSelectedAccountState(acc);
+    if (acc?.accountId) {
+      localStorage.setItem('cs_selected_account_id', acc.accountId);
+    }
+  };
+
+  const selectedRegion = 'us-east-1';
+  const setSelectedRegion = (_region: string) => {};
   const [dateRange, setDateRange] = useState<string>('30d');
   const [theme, setThemeState] = useState<'dark' | 'light'>(() => {
     const saved = localStorage.getItem('cs_theme');
@@ -55,16 +72,44 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   );
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
-  const isDemoData = true;
+  
+  // Real-time calculation: only true if viewing synthesis demo lab
+  const isDemoData = Boolean(selectedAccount?.isDemo || selectedAccount?.accountId === 'synthesis-demo');
 
   const refreshAccounts = useCallback(async () => {
     try {
-      const res = await apiService.getAWSAccounts();
+      let userEmail: string | undefined = undefined;
+      try {
+        const raw = localStorage.getItem('cloudsense_session');
+        if (raw) userEmail = JSON.parse(raw)?.user?.email;
+      } catch {}
+
+      const res = await apiService.getAWSAccounts(userEmail);
       if (res && res.data && res.data.length > 0) {
         setAccounts(res.data);
-        setSelectedAccount((prev) => {
-          const match = res.data.find((a) => a.id === prev.id || a.accountId === prev.accountId);
-          return match || res.data[0];
+        const savedId = localStorage.getItem('cs_selected_account_id');
+        const realAcc = res.data.find((a) => !a.isDemo && a.accountId !== 'synthesis-demo');
+
+        setSelectedAccountState((prev) => {
+          // If user explicitly saved an account choice that exists, honor it
+          if (savedId) {
+            const savedMatch = res.data.find((a) => a.accountId === savedId || a.id === savedId);
+            if (savedMatch) return savedMatch;
+          }
+
+          // If current selection is an authentic real account, retain it
+          if (prev && !prev.isDemo && prev.accountId !== 'synthesis-demo') {
+            const match = res.data.find((a) => a.id === prev.id || a.accountId === prev.accountId);
+            if (match) return match;
+          }
+
+          // Default immediately to the real connected AWS account!
+          if (realAcc) {
+            localStorage.setItem('cs_selected_account_id', realAcc.accountId);
+            return realAcc;
+          }
+
+          return res.data[0];
         });
       }
     } catch (e) {

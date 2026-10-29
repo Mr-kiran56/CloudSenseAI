@@ -36,6 +36,7 @@ export interface DashboardSummary {
   totalSpend: number;
   forecastSpend: number;
   potentialSavings: number;
+  savingsRealized?: number;
   activeAnomaliesCount: number;
   pendingApprovalsCount: number;
   healthyResourceCount: number;
@@ -43,6 +44,7 @@ export interface DashboardSummary {
   oversizedResourceCount: number;
   idleResourceCount: number;
   criticalResourceCount: number;
+  monitoredResourcesCount?: number;
   spendTrendPercent: number;
   aiInsight: string;
 }

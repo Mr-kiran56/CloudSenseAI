@@ -1,4 +1,22 @@
-# Logs
+# Credentials and Sensitive Files
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+*accessKeys*.csv
+*CREDCS*
+*.db
+*.sqlite3
+
+# Python Cache & Artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
 logs
 *.log
 npm-debug.log*
@@ -22,3 +40,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Raw media staging
+vedios/
+Creating_professional_animated_w*.mp4

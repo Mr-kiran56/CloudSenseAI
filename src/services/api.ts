@@ -51,7 +51,7 @@ function getAuthHeaders(): HeadersInit {
 async function fetchJson<T>(endpoint: string, fallback: T): Promise<{ data: T; isDemo: boolean }> {
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3500); // 3.5s timeout
+    const timeoutId = setTimeout(() => controller.abort(), 6000); // 6s timeout
 
     const res = await fetch(`${API_BASE_URL}${endpoint}`, {
       headers: getAuthHeaders(),
@@ -66,7 +66,11 @@ async function fetchJson<T>(endpoint: string, fallback: T): Promise<{ data: T; i
     const data = await res.json();
     return { data, isDemo: false };
   } catch (err) {
-    // Graceful fallback to verified synthesis/demo data when backend is starting or offline
+    // If the query is scoped to a real AWS account, never leak synthesis benchmark mock numbers
+    const isLiveAccountQuery = endpoint.includes('account_id=') && !endpoint.includes('synthesis-demo');
+    if (isLiveAccountQuery && Array.isArray(fallback)) {
+      return { data: [] as unknown as T, isDemo: false };
+    }
     return { data: fallback, isDemo: true };
   }
 }
@@ -146,8 +150,9 @@ export const apiService = {
     return fetchJson('/api/v1/auth/me', mockUserProfile);
   },
 
-  async getAWSAccounts(): Promise<{ data: AWSAccount[]; isDemo: boolean }> {
-    return fetchJson('/api/v1/cloud-accounts', mockAWSAccounts);
+  async getAWSAccounts(userEmail?: string): Promise<{ data: AWSAccount[]; isDemo: boolean }> {
+    const q = userEmail ? `?user_email=${encodeURIComponent(userEmail)}` : '';
+    return fetchJson(`/api/v1/cloud-accounts${q}`, mockAWSAccounts);
   },
 
   async testAWSConnection(params: {
@@ -222,13 +227,15 @@ export const apiService = {
     }
   },
 
-  async getDashboardSummary(): Promise<{ data: DashboardSummary; isDemo: boolean }> {
-    const res = await fetchJson<any>('/api/v1/dashboard/summary', mockDashboardSummary);
+  async getDashboardSummary(accountId?: string): Promise<{ data: DashboardSummary; isDemo: boolean }> {
+    const q = accountId ? `?account_id=${encodeURIComponent(accountId)}` : '';
+    const res = await fetchJson<any>(`/api/v1/dashboard/summary${q}`, mockDashboardSummary);
     const d = res.data || {};
     const normalized: DashboardSummary = {
       totalSpend: Number(d.totalSpend ?? d.totalMonthlySpend ?? 14280),
       forecastSpend: Number(d.forecastSpend ?? d.projectedMonthEnd ?? 14890),
       potentialSavings: Number(d.potentialSavings ?? d.savingsIdentified ?? 3240),
+      savingsRealized: Number(d.savingsRealized ?? 1120),
       activeAnomaliesCount: Number(d.activeAnomaliesCount ?? 1),
       pendingApprovalsCount: Number(d.pendingApprovalsCount ?? 3),
       healthyResourceCount: Number(d.healthyResourceCount ?? 32),
@@ -236,18 +243,21 @@ export const apiService = {
       oversizedResourceCount: Number(d.oversizedResourceCount ?? 2),
       idleResourceCount: Number(d.idleResourceCount ?? 1),
       criticalResourceCount: Number(d.criticalResourceCount ?? 1),
+      monitoredResourcesCount: Number(d.monitoredResourcesCount ?? 39),
       spendTrendPercent: Number(d.spendTrendPercent ?? 4.2),
       aiInsight: d.aiInsight || 'Prophet forecasting predicts cloud expenditure will stabilize near $14,890/mo with 4 high-confidence savings opportunities ready for automated MCP execution.',
     };
     return { data: normalized, isDemo: res.isDemo };
   },
 
-  async getCostForecast(horizonDays = 30): Promise<{ data: CostForecastPoint[]; isDemo: boolean }> {
-    return fetchJson(`/api/v1/cost/forecast?horizon_days=${horizonDays}`, mockForecastPoints);
+  async getCostForecast(horizonDays = 30, accountId?: string): Promise<{ data: CostForecastPoint[]; isDemo: boolean }> {
+    const accQ = accountId ? `&account_id=${encodeURIComponent(accountId)}` : '';
+    return fetchJson(`/api/v1/cost/forecast?horizon_days=${horizonDays}${accQ}`, mockForecastPoints);
   },
 
-  async getCostBreakdown(): Promise<{ data: CostBreakdownItem[]; isDemo: boolean }> {
-    const res = await fetchJson<any[]>('/api/v1/cost/breakdown', mockCostBreakdownServices);
+  async getCostBreakdown(accountId?: string): Promise<{ data: CostBreakdownItem[]; isDemo: boolean }> {
+    const q = accountId ? `?account_id=${encodeURIComponent(accountId)}` : '';
+    const res = await fetchJson<any[]>(`/api/v1/cost/breakdown${q}`, mockCostBreakdownServices);
     const list = Array.isArray(res.data) ? res.data : mockCostBreakdownServices;
     const normalized = list.map((item: any) => ({
       category: item.category || 'Compute',
@@ -259,36 +269,92 @@ export const apiService = {
     return { data: normalized, isDemo: res.isDemo };
   },
 
-  async getUnitEconomics(): Promise<{ data: UnitEconomicsMetric[]; isDemo: boolean }> {
-    return fetchJson('/api/v1/unit-economics', mockUnitEconomicsMetrics);
+  async getUnitEconomics(accountId?: string): Promise<{ data: UnitEconomicsMetric[]; isDemo: boolean }> {
+    const q = accountId ? `?account_id=${encodeURIComponent(accountId)}` : '';
+    return fetchJson(`/api/v1/unit-economics${q}`, mockUnitEconomicsMetrics);
   },
 
-  async getResources(): Promise<{ data: CloudResource[]; isDemo: boolean }> {
-    return fetchJson('/api/v1/resources', mockCloudResources);
+  async getResources(accountId?: string): Promise<{ data: CloudResource[]; isDemo: boolean }> {
+    const q = accountId ? `?account_id=${encodeURIComponent(accountId)}` : '';
+    return fetchJson(`/api/v1/resources${q}`, mockCloudResources);
   },
 
-  async getRecommendations(): Promise<{ data: Recommendation[]; isDemo: boolean }> {
-    return fetchJson('/api/v1/recommendations', mockRecommendations);
+  async getRecommendations(accountId?: string): Promise<{ data: Recommendation[]; isDemo: boolean }> {
+    const q = accountId ? `?account_id=${encodeURIComponent(accountId)}` : '';
+    return fetchJson(`/api/v1/recommendations${q}`, mockRecommendations);
   },
 
-  async getAnomalies(): Promise<{ data: Anomaly[]; isDemo: boolean }> {
-    return fetchJson('/api/v1/anomalies', mockAnomalies);
+  async getAnomalies(accountId?: string): Promise<{ data: Anomaly[]; isDemo: boolean }> {
+    const q = accountId ? `?account_id=${encodeURIComponent(accountId)}` : '';
+    return fetchJson(`/api/v1/anomalies${q}`, mockAnomalies);
   },
 
-  async getRemediationJobs(): Promise<{ data: RemediationJob[]; isDemo: boolean }> {
-    return fetchJson('/api/v1/remediation/jobs', mockRemediationJobs);
+  async getRemediationJobs(accountId?: string): Promise<{ data: RemediationJob[]; isDemo: boolean }> {
+    const q = accountId ? `?account_id=${encodeURIComponent(accountId)}` : '';
+    return fetchJson(`/api/v1/remediation/jobs${q}`, mockRemediationJobs);
   },
 
-  async getApprovals(): Promise<{ data: ApprovalItem[]; isDemo: boolean }> {
-    return fetchJson('/api/v1/approvals', mockApprovalItems);
+  async getApprovals(accountId?: string): Promise<{ data: ApprovalItem[]; isDemo: boolean }> {
+    const q = accountId ? `?account_id=${encodeURIComponent(accountId)}` : '';
+    return fetchJson(`/api/v1/approvals${q}`, mockApprovalItems);
   },
 
-  async getAuditEvents(): Promise<{ data: AuditEvent[]; isDemo: boolean }> {
-    return fetchJson('/api/v1/activity/audit-logs', mockAuditEvents);
+  async getAuditEvents(accountId?: string): Promise<{ data: AuditEvent[]; isDemo: boolean }> {
+    const q = accountId ? `?account_id=${encodeURIComponent(accountId)}` : '';
+    return fetchJson(`/api/v1/activity/audit-logs${q}`, mockAuditEvents);
   },
 
-  async getNotifications(): Promise<{ data: Notification[]; isDemo: boolean }> {
-    return fetchJson('/api/v1/notifications', mockNotifications);
+  async getNotifications(accountId?: string): Promise<{ data: Notification[]; isDemo: boolean }> {
+    const q = accountId ? `?account_id=${encodeURIComponent(accountId)}` : '';
+    return fetchJson(`/api/v1/notifications${q}`, mockNotifications);
+  },
+
+  async markNotificationRead(id: string): Promise<boolean> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/notifications/${id}/read`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+      });
+      return res.ok;
+    } catch {
+      return false;
+    }
+  },
+
+  async markAllNotificationsRead(): Promise<boolean> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/notifications/mark-all-read`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+      });
+      return res.ok;
+    } catch {
+      return false;
+    }
+  },
+
+  async mitigateAnomaly(incidentId: string, actionType = 'deploy_waf_rate_limit'): Promise<any> {
+    const res = await fetch(`${API_BASE_URL}/api/v1/anomalies/${incidentId}/mitigate`, {
+      method: 'POST',
+      headers: {
+        ...getAuthHeaders(),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ action_type: actionType }),
+    });
+    return res.json();
+  },
+
+  async triggerDoWTrafficSurge(intensity = 2.5): Promise<any> {
+    const res = await fetch(`${API_BASE_URL}/api/v1/anomalies/simulate-dow`, {
+      method: 'POST',
+      headers: {
+        ...getAuthHeaders(),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ attack_intensity: intensity }),
+    });
+    return res.json();
   },
 
   async getIntegrations(): Promise<{ data: Integration[]; isDemo: boolean }> {
@@ -419,9 +485,10 @@ export const apiService = {
   },
 
   // Approvals & Remediation Actions
-  async approveRecommendation(recommendationId: string, approverName: string): Promise<{ success: boolean; job: RemediationJob }> {
+  async approveRecommendation(recommendationId: string, approverName: string, approvalId?: string): Promise<{ success: boolean; job: RemediationJob }> {
+    const targetId = approvalId || recommendationId;
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/approvals/appr_01/decision`, {
+      const res = await fetch(`${API_BASE_URL}/api/v1/approvals/${encodeURIComponent(targetId)}/decision`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({ decision: 'approved', approverName }),
@@ -458,9 +525,10 @@ export const apiService = {
     return { success: true, job: newJob };
   },
 
-  async rejectRecommendation(recommendationId: string, reason: string): Promise<{ success: boolean }> {
+  async rejectRecommendation(recommendationId: string, reason: string, approvalId?: string): Promise<{ success: boolean }> {
+    const targetId = approvalId || recommendationId;
     try {
-      await fetch(`${API_BASE_URL}/api/v1/approvals/appr_01/decision`, {
+      await fetch(`${API_BASE_URL}/api/v1/approvals/${encodeURIComponent(targetId)}/decision`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({ decision: 'rejected', notes: reason }),
@@ -472,12 +540,15 @@ export const apiService = {
   },
 
   // Conversational Assistant API
-  async queryAssistant(message: string, context?: any): Promise<{ response: string; citations?: string[]; actionsAvailable?: any[] }> {
+  async queryAssistant(
+    message: string,
+    params?: { account_id?: string; provider?: string; api_key?: string; model?: string }
+  ): Promise<{ response: string; citations?: string[]; actionsAvailable?: any[]; llm_used?: string; mode?: string }> {
     try {
       const res = await fetch(`${API_BASE_URL}/api/v1/chat/query`, {
         method: 'POST',
         headers: getAuthHeaders(),
-        body: JSON.stringify({ message, context }),
+        body: JSON.stringify({ message, ...params }),
       });
       if (res.ok) {
         return await res.json();
@@ -493,7 +564,39 @@ export const apiService = {
         { label: 'View Cost Forecast', link: '/cost-forecast' },
         { label: 'Review Approvals', link: '/approvals' },
       ],
+      llm_used: 'CloudSense Live RAG Engine',
+      mode: 'rag_fallback'
     };
+  },
+
+  async getLLMConfig(): Promise<{ provider: string; model: string; base_url?: string; is_configured: boolean; api_key_masked?: string }> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/chat/config`, {
+        headers: getAuthHeaders(),
+      });
+      if (res.ok) return await res.json();
+    } catch {
+      // Ignore
+    }
+    return { provider: 'gemini', model: 'gemini-1.5-flash', is_configured: false };
+  },
+
+  async saveLLMConfig(data: {
+    provider: string;
+    api_key: string;
+    model?: string;
+    base_url?: string;
+  }): Promise<{ success: boolean; message?: string; provider?: string; model?: string; is_configured?: boolean }> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/chat/config`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(data),
+      });
+      return await res.json();
+    } catch (err: any) {
+      return { success: false, message: err.message || 'Failed to save LLM configuration' };
+    }
   },
 
   // Raw Synthesis Data & Model Lab API

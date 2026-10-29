@@ -21,14 +21,16 @@ class AWSAccount(Base):
     __tablename__ = "aws_accounts"
 
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    user_email = Column(String(255), nullable=True)
     account_id = Column(String(64), unique=True, index=True, nullable=False)
     name = Column(String(255), nullable=False)
     alias = Column(String(100), nullable=True)
     env = Column(String(50), default="production")  # production, staging, dev, demo
     region = Column(String(64), default="us-east-1")
     role_arn = Column(String(255), nullable=True)
-    access_key_id = Column(String(128), nullable=True)
-    secret_access_key = Column(String(255), nullable=True)
+    access_key_id = Column(Text, nullable=True)
+    secret_access_key = Column(Text, nullable=True)
     external_id = Column(String(128), nullable=True)
     status = Column(String(50), default="connected")  # connected, degraded, pending, error
     monthly_spend = Column(Float, default=0.0)
@@ -40,13 +42,16 @@ class CloudResource(Base):
     __tablename__ = "cloud_resources"
 
     id = Column(Integer, primary_key=True, index=True)
+    account_id = Column(String(64), index=True, default="synthesis-demo")
     resource_id = Column(String(255), unique=True, index=True, nullable=False)
     resource_type = Column(String(100), nullable=False)  # ec2_instance, ebs_volume, rds_instance, lambda_function, nat_gateway
     name = Column(String(255), nullable=False)
     region = Column(String(64), default="us-east-1")
     service = Column(String(64), nullable=False)  # Amazon EC2, Amazon RDS, Amazon S3, AWS Lambda
-    status = Column(String(50), default="running")  # running, idle, stopped, unattached
+    status = Column(String(50), default="running")  # running, idle, stopped, unattached, oversized, critical
     monthly_cost = Column(Float, default=0.0)
+    estimated_saving = Column(Float, default=0.0)
+    risk_level = Column(String(32), default="low")
     tags_json = Column(Text, default="{}")
     cpu_avg = Column(Float, default=0.0)
     memory_avg = Column(Float, default=0.0)
@@ -91,6 +96,7 @@ class AnomalyIncident(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     incident_id = Column(String(64), unique=True, index=True, nullable=False)
+    account_id = Column(String(64), index=True, nullable=True)
     title = Column(String(255), nullable=False)
     service = Column(String(100), nullable=False)
     resource_id = Column(String(255), nullable=True)
@@ -108,6 +114,7 @@ class Recommendation(Base):
     __tablename__ = "recommendations"
 
     id = Column(Integer, primary_key=True, index=True)
+    account_id = Column(String(64), index=True, default="synthesis-demo")
     rec_id = Column(String(64), unique=True, index=True, nullable=False)
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=False)
@@ -130,6 +137,7 @@ class ApprovalRecord(Base):
     __tablename__ = "approval_records"
 
     id = Column(Integer, primary_key=True, index=True)
+    account_id = Column(String(64), index=True, default="synthesis-demo")
     recommendation_id = Column(String(64), index=True, nullable=False)
     approver_id = Column(String(100), nullable=False)
     approver_name = Column(String(255), nullable=False)
@@ -175,6 +183,8 @@ class Notification(Base):
     __tablename__ = "notifications"
 
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    account_id = Column(String(64), index=True, nullable=True)
     title = Column(String(255), nullable=False)
     message = Column(Text, nullable=False)
     severity = Column(String(32), default="info")  # info, warning, critical, success
@@ -187,6 +197,7 @@ class Integration(Base):
     __tablename__ = "integrations"
 
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     type = Column(String(64), nullable=False)  # slack, webhook, pagerduty, aws_cur, aws_cloudwatch
     name = Column(String(255), nullable=False)
     status = Column(String(32), default="active")  # active, paused, disconnected

@@ -38,7 +38,7 @@ import { useApp } from '../context/AppContext';
 
 export const Dashboard: React.FC = () => {
   const navigate = useNavigate();
-  const { isDemoData } = useApp();
+  const { isDemoData, selectedAccount } = useApp();
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [forecast, setForecast] = useState<CostForecastPoint[]>([]);
@@ -51,12 +51,13 @@ export const Dashboard: React.FC = () => {
     async function loadData() {
       setLoading(true);
       try {
+        const accId = selectedAccount?.accountId;
         const [sumRes, fcRes, bdRes, recRes, anomRes] = await Promise.all([
-          apiService.getDashboardSummary(),
-          apiService.getCostForecast(30),
-          apiService.getCostBreakdown(),
-          apiService.getRecommendations(),
-          apiService.getAnomalies(),
+          apiService.getDashboardSummary(accId),
+          apiService.getCostForecast(30, accId),
+          apiService.getCostBreakdown(accId),
+          apiService.getRecommendations(accId),
+          apiService.getAnomalies(accId),
         ]);
         setSummary(sumRes.data);
         setForecast(fcRes.data);
@@ -70,7 +71,7 @@ export const Dashboard: React.FC = () => {
       }
     }
     loadData();
-  }, []);
+  }, [selectedAccount?.accountId]);
 
   if (loading || !summary) {
     return (
@@ -145,47 +146,47 @@ export const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-6 gap-3">
         <MetricCard
           label="Current Spend"
-          value={`$${(summary?.totalSpend ?? 14280).toLocaleString()}`}
-          delta={`${(summary?.spendTrendPercent ?? 4.2) >= 0 ? '+' : ''}${summary?.spendTrendPercent ?? 4.2}% vs prior`}
+          value={`$${(summary?.totalSpend ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          delta={`${(summary?.spendTrendPercent ?? 0) >= 0 ? '+' : ''}${summary?.spendTrendPercent ?? 0}% vs prior`}
           deltaTone={(summary?.spendTrendPercent ?? 0) > 0 ? 'bad' : 'good'}
-          hint="Production master account"
+          hint={isDemoData ? 'Synthesis Benchmark' : 'Live AWS Account'}
           icon={<DollarSign className="w-4 h-4 text-blue-400" />}
-          spark={[18, 20, 19, 22, 24, 23, 26]}
+          spark={summary?.totalSpend ? [18, 20, 19, 22, 24, 23, 26] : [0, 0, 0, 0, 0, 0, 0]}
           onClick={() => navigate('/cost')}
         />
         <MetricCard
           label="Forecasted Spend"
-          value={`$${(summary?.forecastSpend ?? 14890).toLocaleString()}`}
-          hint="Prophet 30-day projection"
+          value={`$${(summary?.forecastSpend ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          hint={isDemoData ? 'Prophet 30-day projection' : 'Live 30-day run rate'}
           icon={<TrendingUp className="w-4 h-4 text-purple-400" />}
           onClick={() => navigate('/cost')}
         />
         <MetricCard
           label="Validated Savings"
-          value={`$${(summary?.potentialSavings ?? 3240).toLocaleString()}`}
-          delta="4 Approved actions"
+          value={`$${(summary?.potentialSavings ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          delta={`${summary?.savingsRealized ? `$${summary.savingsRealized.toLocaleString()} realized` : 'Identified'}`}
           deltaTone="good"
           icon={<Lightbulb className="w-4 h-4 text-emerald-400" />}
           onClick={() => navigate('/recommendations')}
         />
         <MetricCard
           label="Active Anomalies"
-          value={String(summary?.activeAnomaliesCount ?? 1)}
-          hint="1 Critical DoW Candidate"
+          value={String(summary?.activeAnomaliesCount ?? 0)}
+          hint={summary?.activeAnomaliesCount ? 'Isolation Forest flagged' : 'Zero active anomalies'}
           icon={<ShieldAlert className="w-4 h-4 text-amber-400" />}
           onClick={() => navigate('/anomalies')}
         />
         <MetricCard
           label="Pending Approvals"
-          value={String(summary?.pendingApprovalsCount ?? 3)}
+          value={String(summary?.pendingApprovalsCount ?? 0)}
           hint="Human-in-the-loop queue"
           icon={<CheckSquare className="w-4 h-4 text-cyan-400" />}
           onClick={() => navigate('/approvals')}
         />
         <MetricCard
           label="Monitored Resources"
-          value={String(summary?.healthyResourceCount ?? 38)}
-          hint={`${(summary?.underutilizedResourceCount ?? 3) + (summary?.idleResourceCount ?? 1)} underutilized`}
+          value={String(summary?.monitoredResourcesCount ?? summary?.healthyResourceCount ?? 0)}
+          hint={`${summary?.underutilizedResourceCount ?? 0} underutilized`}
           icon={<Server className="w-4 h-4 text-indigo-400" />}
           onClick={() => navigate('/resources')}
         />
@@ -208,103 +209,131 @@ export const Dashboard: React.FC = () => {
               </button>
             }
           />
-          <div className="h-80 w-full mt-4" role="img" aria-label="Cloud spend actual versus Prophet forecast">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={forecast} margin={{ top: 8, right: 12, left: -10, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="actualGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.35} />
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.0} />
-                  </linearGradient>
-                  <linearGradient id="forecastGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.25} />
-                    <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid stroke="var(--cs-line)" strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'var(--cs-ink-3)' }} stroke="var(--cs-line)" />
-                <YAxis
-                  tick={{ fontSize: 11, fill: 'var(--cs-ink-3)' }}
-                  stroke="var(--cs-line)"
-                  tickFormatter={(val) => `$${val}`}
-                />
-                <Tooltip contentStyle={tooltipStyle} formatter={(val: any) => [val ? `$${val}` : '—', '']} />
-                <Legend wrapperStyle={{ fontSize: 12, paddingTop: 10 }} />
-                <ReferenceLine
-                  y={483.33}
-                  label={{ value: 'Daily Budget $483/d', fill: '#10b981', fontSize: 10, position: 'top' }}
-                  stroke="#10b981"
-                  strokeDasharray="4 4"
-                />
-                <Area
-                  type="monotone"
-                  dataKey="actualCost"
-                  name="Actual Historical"
-                  stroke="#3b82f6"
-                  fill="url(#actualGradient)"
-                  strokeWidth={2.5}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="forecastCost"
-                  name="Prophet Forecast"
-                  stroke="#a855f7"
-                  fill="url(#forecastGradient)"
-                  strokeWidth={2}
-                  strokeDasharray="4 4"
-                />
-                <Area
-                  type="monotone"
-                  dataKey="confidenceUpper"
-                  name="Confidence Upper (80%)"
-                  stroke="#64748b"
-                  fill="none"
-                  strokeWidth={1}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="confidenceLower"
-                  name="Confidence Lower (80%)"
-                  stroke="#475569"
-                  fill="none"
-                  strokeWidth={1}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
+          {forecast.length > 0 ? (
+            <div className="h-80 w-full mt-4" role="img" aria-label="Cloud spend actual versus Prophet forecast">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={forecast} margin={{ top: 8, right: 12, left: -10, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="actualGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.35} />
+                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.0} />
+                    </linearGradient>
+                    <linearGradient id="forecastGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.25} />
+                      <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid stroke="var(--cs-line)" strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'var(--cs-ink-3)' }} stroke="var(--cs-line)" />
+                  <YAxis
+                    tick={{ fontSize: 11, fill: 'var(--cs-ink-3)' }}
+                    stroke="var(--cs-line)"
+                    tickFormatter={(val) => `$${val}`}
+                  />
+                  <Tooltip contentStyle={tooltipStyle} formatter={(val: any) => [val ? `$${val}` : '—', '']} />
+                  <Legend wrapperStyle={{ fontSize: 12, paddingTop: 10 }} />
+                  <ReferenceLine
+                    y={483.33}
+                    label={{ value: 'Daily Budget $483/d', fill: '#10b981', fontSize: 10, position: 'top' }}
+                    stroke="#10b981"
+                    strokeDasharray="4 4"
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="actualCost"
+                    name="Actual Historical"
+                    stroke="#3b82f6"
+                    fill="url(#actualGradient)"
+                    strokeWidth={2.5}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="forecastCost"
+                    name="Prophet Forecast"
+                    stroke="#a855f7"
+                    fill="url(#forecastGradient)"
+                    strokeWidth={2}
+                    strokeDasharray="4 4"
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="confidenceUpper"
+                    name="Confidence Upper (80%)"
+                    stroke="#64748b"
+                    fill="none"
+                    strokeWidth={1}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="confidenceLower"
+                    name="Confidence Lower (80%)"
+                    stroke="#475569"
+                    fill="none"
+                    strokeWidth={1}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <div className="h-80 w-full mt-4 flex flex-col items-center justify-center text-center p-6 bg-[var(--cs-muted)]/30 rounded-xl border border-dashed border-[var(--cs-line)]">
+              <Sparkles className="w-8 h-8 text-[var(--cs-brand)] mb-2" />
+              <p className="text-sm font-semibold text-[var(--cs-ink)]">Live Telemetry Pipeline Initializing</p>
+              <p className="text-xs text-[var(--cs-ink-3)] max-w-md mt-1">
+                Your AWS Account is connected. Daily spend curves and Prophet forecast envelopes will render as live Cost Explorer data streams in.
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-3"
+                onClick={() => navigate('/cloud-accounts')}
+              >
+                Manage Cloud Ingestion
+              </Button>
+            </div>
+          )}
         </Card>
 
         {/* Cost Breakdown by Service */}
         <Card>
           <CardHeader title="Service Expenditure Allocation" subtitle="Top cost-generating AWS services" />
           <div className="space-y-4 mt-2">
-            {breakdown.map((item, i) => {
-              const colors = ['#3b82f6', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ec4899'];
-              const itemName = item.name || (item as any).service || `Service ${i + 1}`;
-              const itemCost = Number(item.cost ?? 0);
-              const itemPct = Number(item.percentage ?? 0);
-              const itemChg = Number(item.changePercent ?? 0);
-              return (
-                <div key={itemName} className="space-y-1">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-[var(--cs-ink)] font-medium truncate max-w-[170px]">{itemName}</span>
-                    <span className="font-mono font-semibold text-[var(--cs-ink)]">${itemCost.toLocaleString()}</span>
+            {breakdown.length > 0 ? (
+              breakdown.map((item, i) => {
+                const colors = ['#3b82f6', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ec4899'];
+                const itemName = item.name || (item as any).service || `Service ${i + 1}`;
+                const itemCost = Number(item.cost ?? 0);
+                const itemPct = Number(item.percentage ?? 0);
+                const itemChg = Number(item.changePercent ?? 0);
+                return (
+                  <div key={itemName} className="space-y-1">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-[var(--cs-ink)] font-medium truncate max-w-[170px]">{itemName}</span>
+                      <span className="font-mono font-semibold text-[var(--cs-ink)]">${itemCost.toLocaleString()}</span>
+                    </div>
+                    <div className="h-1.5 w-full bg-[var(--cs-muted)] rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{ width: `${itemPct}%`, background: colors[i % colors.length] }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-[11px] text-[var(--cs-ink-3)] font-mono">
+                      <span>{itemPct}% of total</span>
+                      <span className={itemChg > 0 ? 'text-rose-500 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}>
+                        {itemChg >= 0 ? '+' : ''}{itemChg}% vs prior
+                      </span>
+                    </div>
                   </div>
-                  <div className="h-1.5 w-full bg-[var(--cs-muted)] rounded-full overflow-hidden">
-                    <div
-                      className="h-full rounded-full transition-all duration-500"
-                      style={{ width: `${itemPct}%`, background: colors[i % colors.length] }}
-                    />
-                  </div>
-                  <div className="flex justify-between text-[11px] text-[var(--cs-ink-3)] font-mono">
-                    <span>{itemPct}% of total</span>
-                    <span className={itemChg > 0 ? 'text-rose-500 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}>
-                      {itemChg >= 0 ? '+' : ''}{itemChg}% vs prior
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })
+            ) : (
+              <div className="py-14 flex flex-col items-center justify-center text-center p-4">
+                <Database className="w-8 h-8 text-[var(--cs-ink-3)] mb-2" />
+                <p className="text-xs font-semibold text-[var(--cs-ink-2)]">No Service Ingestion Records Yet</p>
+                <p className="text-[11px] text-[var(--cs-ink-3)] max-w-xs mt-1">
+                  Service-level expenditure will break down automatically once Cost Explorer data is synchronized.
+                </p>
+              </div>
+            )}
           </div>
         </Card>
       </div>
@@ -339,38 +368,50 @@ export const Dashboard: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--cs-line)] font-sans">
-              {recommendations.slice(0, 4).map((rec) => (
-                <tr key={rec.id} className="hover:bg-[var(--cs-muted)]/50 transition">
-                  <td className="px-5 py-3.5">
-                    <p className="font-semibold text-[var(--cs-ink)]">{rec.resourceName}</p>
-                    <p className="font-mono text-[11px] text-[var(--cs-ink-3)]">
-                      {rec.resourceId} &bull; {rec.service}
+              {recommendations.length > 0 ? (
+                recommendations.slice(0, 4).map((rec) => (
+                  <tr key={rec.id} className="hover:bg-[var(--cs-muted)]/50 transition">
+                    <td className="px-5 py-3.5">
+                      <p className="font-semibold text-[var(--cs-ink)]">{rec.resourceName}</p>
+                      <p className="font-mono text-[11px] text-[var(--cs-ink-3)]">
+                        {rec.resourceId} &bull; {rec.service}
+                      </p>
+                    </td>
+                    <td className="px-5 py-3.5 max-w-sm">
+                      <p className="text-[var(--cs-ink-2)] truncate">{rec.problem}</p>
+                    </td>
+                    <td className="px-5 py-3.5 font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm">
+                      +${rec.monthlySavings} / mo
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <ConfidenceBadge confidence={rec.aiConfidence} />
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <RiskBadge risk={rec.risk} />
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <Badge variant={rec.status === 'approved' ? 'success' : 'warning'}>
+                        {rec.status.replace('_', ' ')}
+                      </Badge>
+                    </td>
+                    <td className="px-5 py-3.5 text-right">
+                      <Button variant="outline" size="sm" onClick={() => navigate(`/recommendations/${rec.id}`)}>
+                        Review & Approve
+                      </Button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={7} className="px-5 py-10 text-center text-[var(--cs-ink-3)]">
+                    <ShieldCheck className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
+                    <p className="text-xs font-semibold text-[var(--cs-ink)]">No Pending Optimization Actions</p>
+                    <p className="text-[11px] text-[var(--cs-ink-3)] mt-0.5 max-w-md mx-auto">
+                      All monitored cloud resources are operating within efficiency baselines, or initial rightsizing telemetry is syncing.
                     </p>
                   </td>
-                  <td className="px-5 py-3.5 max-w-sm">
-                    <p className="text-[var(--cs-ink-2)] truncate">{rec.problem}</p>
-                  </td>
-                  <td className="px-5 py-3.5 font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm">
-                    +${rec.monthlySavings} / mo
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <ConfidenceBadge confidence={rec.aiConfidence} />
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <RiskBadge risk={rec.risk} />
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <Badge variant={rec.status === 'approved' ? 'success' : 'warning'}>
-                      {rec.status.replace('_', ' ')}
-                    </Badge>
-                  </td>
-                  <td className="px-5 py-3.5 text-right">
-                    <Button variant="outline" size="sm" onClick={() => navigate(`/recommendations/${rec.id}`)}>
-                      Review & Approve
-                    </Button>
-                  </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>

@@ -119,7 +119,7 @@ Everything is operating within expected bounds. You can review full telemetry in
 
 export const AssistantPage: React.FC = () => {
   const navigate = useNavigate();
-  const { addToast } = useApp();
+  const { addToast, selectedAccount } = useApp();
   const [threads, setThreads] = useState<Thread[]>([
     {
       id: 't1',
@@ -144,8 +144,26 @@ export const AssistantPage: React.FC = () => {
   const [inputQuery, setInputQuery] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [thinkingSteps, setThinkingSteps] = useState<string[]>([]);
+  const [llmEngine, setLlmEngine] = useState<string>('Google Gemini / OpenAI');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    async function loadConfig() {
+      try {
+        const cfg = await apiService.getLLMConfig();
+        if (cfg) {
+          const name = cfg.is_configured
+            ? `${cfg.provider.toUpperCase()} (${cfg.model})`
+            : `${cfg.provider.toUpperCase()} (RAG Active)`;
+          setLlmEngine(name);
+        }
+      } catch (e) {
+        // Ignore
+      }
+    }
+    loadConfig();
+  }, []);
 
   const active = useMemo(() => threads.find((t) => t.id === activeId)!, [threads, activeId]);
 
@@ -187,7 +205,9 @@ export const AssistantPage: React.FC = () => {
     setThinkingSteps(['Reading AWS telemetry', 'Consulting Prophet & XGBoost models', 'Validating MCP guardrails']);
 
     try {
-      const backendRes = await apiService.queryAssistant(query);
+      const backendRes = await apiService.queryAssistant(query, {
+        account_id: selectedAccount?.accountId,
+      });
       const citations = (backendRes.citations || []).map((c: string) => ({
         label: c,
         link: c.toLowerCase().includes('forecast') ? '/cost' : c.toLowerCase().includes('dow') ? '/anomalies' : '/dashboard',
@@ -200,7 +220,7 @@ export const AssistantPage: React.FC = () => {
         text: backendRes.response || 'I have analyzed your query across all 3 models.',
         citations,
         toolCalls: [
-          { tool: 'cloudsense.ml_inference', args: 'all_models=true', status: 'completed' },
+          { tool: backendRes.llm_used || 'CloudSense FinOps LLM', args: `account=${selectedAccount?.accountId || 'synthesis-demo'}`, status: 'completed' },
           { tool: 'mcp.least_privilege_check', args: 'role=read_only', status: 'completed' },
         ],
       };
@@ -291,9 +311,17 @@ export const AssistantPage: React.FC = () => {
               <p className="text-[11px] text-[var(--cs-ink-3)]">FinOps answers with citations — never silent AWS changes</p>
             </div>
           </div>
-          <div className="hidden sm:flex items-center gap-1.5 text-[11px] text-[var(--cs-ink-3)]">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#34A853]" />
-            Models online
+          <div className="hidden sm:flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--cs-brand-soft)] text-[var(--cs-brand)] text-[12px] font-medium border border-[var(--cs-line)]">
+              <Sparkles className="w-3.5 h-3.5" />
+              {llmEngine}
+            </span>
+            <button
+              onClick={() => navigate('/settings/ai')}
+              className="text-[11px] text-[var(--cs-ink-3)] hover:text-[var(--cs-brand)] underline"
+            >
+              Configure Key
+            </button>
           </div>
         </header>
 

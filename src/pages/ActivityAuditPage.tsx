@@ -9,7 +9,7 @@ import { Activity, Download, Search, Filter } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 export const ActivityAuditPage: React.FC = () => {
-  const { addToast } = useApp();
+  const { addToast, selectedAccount } = useApp();
   const [loading, setLoading] = useState(true);
   const [events, setEvents] = useState<AuditEvent[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -18,7 +18,7 @@ export const ActivityAuditPage: React.FC = () => {
     async function loadData() {
       setLoading(true);
       try {
-        const res = await apiService.getAuditEvents();
+        const res = await apiService.getAuditEvents(selectedAccount?.accountId);
         setEvents(res.data);
       } catch (err) {
         console.error('Failed to load audit logs:', err);
@@ -27,7 +27,7 @@ export const ActivityAuditPage: React.FC = () => {
       }
     }
     loadData();
-  }, []);
+  }, [selectedAccount?.accountId]);
 
   const handleExport = () => {
     const csvContent =
@@ -102,6 +102,17 @@ export const ActivityAuditPage: React.FC = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+            {filtered.length === 0 && (
+              <tr>
+                <td colSpan={7} className="p-12 text-center text-[var(--cs-ink-3)]">
+                  <Activity className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm font-medium text-[var(--cs-ink)]">No audit events recorded</p>
+                  <p className="text-xs text-[var(--cs-ink-3)] mt-1">
+                    Audit log entries will appear automatically as IAM or Boto3 actions execute on this account.
+                  </p>
+                </td>
+              </tr>
+            )}
             {filtered.map((e) => (
               <tr key={e.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
                 <td className="p-3 font-mono text-slate-400">{e.timestamp}</td>

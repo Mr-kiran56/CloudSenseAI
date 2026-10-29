@@ -56,8 +56,8 @@ export const Sidebar: React.FC = () => {
         { name: 'Cost & forecast', path: '/cost', icon: <TrendingUp className="w-4 h-4" /> },
         { name: 'Unit economics', path: '/unit-economics', icon: <PieChart className="w-4 h-4" /> },
         { name: 'Resources', path: '/resources', icon: <Server className="w-4 h-4" /> },
-        { name: 'Recommendations', path: '/recommendations', icon: <Lightbulb className="w-4 h-4" />, badge: 4 },
-        { name: 'Anomalies & DoW', path: '/anomalies', icon: <ShieldAlert className="w-4 h-4" />, badge: '2' },
+        { name: 'Recommendations', path: '/recommendations', icon: <Lightbulb className="w-4 h-4" />, badge: isDemoData ? 4 : undefined },
+        { name: 'Anomalies & DoW', path: '/anomalies', icon: <ShieldAlert className="w-4 h-4" />, badge: isDemoData ? '2' : undefined },
         { name: 'Data & Model Lab', path: '/synthesis-lab', icon: <Database className="w-4 h-4" />, badge: 'ML' },
       ],
     },
@@ -73,14 +73,14 @@ export const Sidebar: React.FC = () => {
       title: 'Collaboration',
       items: [
         { name: 'Assistant', path: '/assistant', icon: <MessageSquare className="w-4 h-4" /> },
-        { name: 'Notifications', path: '/notifications', icon: <Bell className="w-4 h-4" />, badge: 2 },
+        { name: 'Notifications', path: '/notifications', icon: <Bell className="w-4 h-4" />, badge: isDemoData ? 2 : undefined },
         { name: 'Integrations', path: '/integrations', icon: <Workflow className="w-4 h-4" /> },
       ],
     },
     {
       title: 'Governance',
       items: [
-        { name: 'Approvals', path: '/approvals', icon: <CheckSquare className="w-4 h-4" />, badge: 3 },
+        { name: 'Approvals', path: '/approvals', icon: <CheckSquare className="w-4 h-4" />, badge: isDemoData ? 3 : undefined },
         { name: 'Cloud accounts', path: '/cloud-accounts', icon: <Cloud className="w-4 h-4" /> },
         { name: 'Policies', path: '/policies', icon: <ScrollText className="w-4 h-4" /> },
       ],
@@ -161,9 +161,13 @@ export const Sidebar: React.FC = () => {
       </nav>
 
       {!sidebarCollapsed && isDemoData && (
-        <div className="m-2 p-2.5 rounded-[4px] bg-[var(--cs-warn-soft)] text-[11px] leading-snug text-[var(--cs-warn)]">
-          <p className="font-medium">Demo data</p>
-          <p className="mt-0.5 opacity-90">Backend APIs are not connected. Figures are labeled demo, not live AWS billing.</p>
+        <div className="m-2 p-2.5 rounded-[6px] bg-[var(--cs-warn-soft)] text-[11px] leading-snug text-[var(--cs-warn)] border border-amber-500/20">
+          <p className="font-semibold flex items-center gap-1.5">
+            <span>Demo Sandbox Mode</span>
+          </p>
+          <p className="mt-1 opacity-90">
+            Currently previewing the pre-trained ML Benchmark lab. Switch to your live AWS account in the topbar dropdown to view your cloud infrastructure.
+          </p>
         </div>
       )}
     </aside>

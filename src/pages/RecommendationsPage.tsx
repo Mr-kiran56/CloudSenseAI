@@ -8,9 +8,11 @@ import { apiService } from '../services/api';
 import { Recommendation } from '../types';
 import { PageHeader } from '../components/ui/PageHeader';
 import { ArrowRight } from 'lucide-react';
+import { useApp } from '../context/AppContext';
 
 export const RecommendationsPage: React.FC = () => {
   const navigate = useNavigate();
+  const { selectedAccount } = useApp();
   const [loading, setLoading] = useState(true);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [statusTab, setStatusTab] = useState<string>('needs_review');
@@ -19,7 +21,7 @@ export const RecommendationsPage: React.FC = () => {
     async function loadData() {
       setLoading(true);
       try {
-        const res = await apiService.getRecommendations();
+        const res = await apiService.getRecommendations(selectedAccount?.accountId);
         setRecommendations(res.data);
       } catch (err) {
         console.error('Failed to load recommendations:', err);
@@ -28,7 +30,7 @@ export const RecommendationsPage: React.FC = () => {
       }
     }
     loadData();
-  }, []);
+  }, [selectedAccount?.accountId]);
 
   if (loading) return <Skeleton className="h-96 w-full" />;
 
@@ -63,53 +65,55 @@ export const RecommendationsPage: React.FC = () => {
       />
 
       {/* Recommendation Cards List */}
-      <div className="space-y-4">
-        {filteredRecs.map((rec) => (
-          <Card key={rec.id} hoverable onClick={() => navigate(`/recommendations/${rec.id}`)}>
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="space-y-2 flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap text-xs">
-                  <Badge variant={rec.status === 'approved' ? 'success' : 'warning'}>
-                    {rec.status.replace('_', ' ')}
-                  </Badge>
-                  <ConfidenceBadge confidence={rec.aiConfidence} />
-                  <RiskBadge risk={rec.risk} />
-                  <span className="font-mono text-slate-400 text-[11px]">{rec.createdAt}</span>
+      {filteredRecs.length > 0 ? (
+        <div className="space-y-4">
+          {filteredRecs.map((rec) => (
+            <Card key={rec.id} hoverable onClick={() => navigate(`/recommendations/${rec.id}`)}>
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="space-y-2 flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap text-[12px]">
+                    <Badge variant={rec.status === 'approved' ? 'success' : 'warning'}>
+                      {rec.status.replace('_', ' ')}
+                    </Badge>
+                    <ConfidenceBadge confidence={rec.aiConfidence} />
+                    <RiskBadge risk={rec.risk} />
+                    <span className="font-mono text-[11px] text-[var(--cs-ink-3)]">{rec.createdAt}</span>
+                  </div>
+
+                  <h3 className="text-[15px] font-medium text-[var(--cs-ink)]">{rec.title}</h3>
+                  <p className="text-[13px] text-[var(--cs-ink-3)] line-clamp-2 leading-relaxed">
+                    {rec.problem}
+                  </p>
                 </div>
 
-                <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 hover:text-blue-500 transition-colors">
-                  {rec.title}
-                </h3>
+                {/* Right Side Financial & Actions */}
+                <div className="flex items-center gap-6 border-t md:border-t-0 md:border-l border-[var(--cs-line)] pt-3 md:pt-0 md:pl-6 shrink-0 justify-between md:justify-end">
+                  <div>
+                    <span className="text-[11px] text-[var(--cs-ink-3)] block">Monthly savings</span>
+                    <span className="text-[18px] font-medium tabular-nums text-[var(--cs-ok)]">
+                      +${rec.monthlySavings}/mo
+                    </span>
+                  </div>
 
-                <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed">
-                  <strong>Problem:</strong> {rec.problem}
-                </p>
-
-                <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">
-                  <strong>Root Cause:</strong> {rec.rootCause}
-                </p>
-              </div>
-
-              {/* Right Side Financial & Actions */}
-              <div className="flex items-center gap-6 border-t md:border-t-0 md:border-l border-slate-100 dark:border-slate-800 pt-3 md:pt-0 md:pl-6 shrink-0 justify-between md:justify-end">
-                <div>
-                  <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-semibold">Monthly ROI</span>
-                  <span className="text-lg font-bold font-mono text-emerald-600 dark:text-emerald-400">
-                    +${rec.monthlySavings}/mo
-                  </span>
-                  <span className="text-[10px] text-slate-400 block font-mono">
-                    (${Number(rec.annualSavings || (rec.monthlySavings ? rec.monthlySavings * 12 : 0)).toLocaleString()}/yr)
-                  </span>
+                  <Button variant="primary" size="sm" icon={<ArrowRight className="w-4 h-4" />}>
+                    Review
+                  </Button>
                 </div>
-
-                <Button variant="primary" size="sm" icon={<ArrowRight className="w-4 h-4" />}>
-                  Review Proposal
-                </Button>
               </div>
-            </div>
-          </Card>
-        ))}
-      </div>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <Card className="p-10 text-center">
+          <h3 className="text-[15px] font-medium text-[var(--cs-ink)]">No pending rightsizing actions</h3>
+          <p className="text-[13px] text-[var(--cs-ink-3)] max-w-md mx-auto mt-1.5 leading-relaxed">
+            When idle volumes or oversized instances are detected, explained proposals will appear here for approval.
+          </p>
+          <Button variant="outline" size="sm" className="mt-4" onClick={() => navigate('/cloud-accounts')}>
+            Open cloud accounts
+          </Button>
+        </Card>
+      )}
     </div>
   );
 };

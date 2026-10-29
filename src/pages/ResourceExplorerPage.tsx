@@ -28,7 +28,7 @@ import { useApp } from '../context/AppContext';
 
 export const ResourceExplorerPage: React.FC = () => {
   const [searchParams] = useSearchParams();
-  const { addToast } = useApp();
+  const { addToast, selectedAccount } = useApp();
   const [loading, setLoading] = useState(true);
   const [resources, setResources] = useState<CloudResource[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -40,7 +40,7 @@ export const ResourceExplorerPage: React.FC = () => {
     async function loadData() {
       setLoading(true);
       try {
-        const res = await apiService.getResources();
+        const res = await apiService.getResources(selectedAccount?.accountId);
         setResources(res.data);
       } catch (err) {
         console.error('Failed to load resources:', err);
@@ -49,7 +49,7 @@ export const ResourceExplorerPage: React.FC = () => {
       }
     }
     loadData();
-  }, []);
+  }, [selectedAccount?.accountId]);
 
   const filteredResources = resources.filter((res) => {
     const matchesSearch =
@@ -163,6 +163,17 @@ export const ResourceExplorerPage: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              {filteredResources.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="p-12 text-center text-[var(--cs-ink-3)]">
+                    <Server className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm font-medium text-[var(--cs-ink)]">No cloud resources found</p>
+                    <p className="text-xs text-[var(--cs-ink-3)] mt-1">
+                      No active EC2, RDS, EBS, or Lambda resources found for this account.
+                    </p>
+                  </td>
+                </tr>
+              )}
               {filteredResources.map((res) => (
                 <tr
                   key={res.id}

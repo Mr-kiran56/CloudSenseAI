@@ -12,9 +12,15 @@ ALLOWLISTED_ACTIONS = {
     ],
     "state_changing": [
         "resize_instance",
+        "modify_instance_type",
         "stop_idle_instance",
+        "stop_instance",
         "terminate_idle_instance",
+        "terminate_instance",
         "delete_unattached_volume",
+        "delete_volume",
+        "convert_gp2_to_gp3",
+        "modify_volume_type",
         "modify_autoscaling_group"
     ]
 }

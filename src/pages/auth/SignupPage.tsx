@@ -24,6 +24,7 @@ export const SignupPage: React.FC = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [role, setRole] = useState<UserRole>('cloud_engineer');
 
   // AWS Connection Mode: 'real_aws' or 'demo_lab'
@@ -73,6 +74,12 @@ export const SignupPage: React.FC = () => {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match. Please ensure both passwords are identical.');
+      return;
+    }
+
     setLoading(true);
 
     let awsData = undefined;
@@ -103,7 +110,7 @@ export const SignupPage: React.FC = () => {
 
   return (
     <div className="h-screen max-h-screen bg-[var(--cs-bg)] text-[var(--cs-ink)] flex flex-col justify-center items-center px-4 py-3 relative overflow-hidden font-sans">
-      <div className="w-full max-w-[560px] h-[86vh] max-h-[640px] flex flex-col relative z-10">
+      <div className="w-full max-w-[560px] h-[88vh] max-h-[690px] flex flex-col relative z-10">
         {/* Brand Header */}
         <div className="flex flex-col items-center mb-2.5 shrink-0 text-center">
           <Link to="/" className="inline-flex items-center gap-3">
@@ -185,19 +192,46 @@ export const SignupPage: React.FC = () => {
 
                 <div>
                   <label className="block text-xs font-medium text-[var(--cs-ink-2)] mb-1">
-                    FinOps Role &amp; Authority
+                    Confirm Password
                   </label>
-                  <select
-                    className="w-full h-10 px-3 rounded-lg border border-[var(--cs-line)] bg-[var(--cs-surface)] text-sm text-[var(--cs-ink)] focus:outline-none focus:border-[var(--cs-brand)] focus:ring-1 focus:ring-[var(--cs-brand)] transition"
-                    value={role}
-                    onChange={(e) => setRole(e.target.value as UserRole)}
-                  >
-                    <option value="admin">Administrator (Full Approval Authority)</option>
-                    <option value="finops_analyst">FinOps Analyst (Forecasts &amp; SHAP)</option>
-                    <option value="cloud_engineer">Cloud Engineer (Infrastructure Explorer)</option>
-                    <option value="viewer">Executive Viewer (Read-only)</option>
-                  </select>
+                  <input
+                    className={`w-full h-10 px-3 rounded-lg border ${
+                      confirmPassword && password !== confirmPassword
+                        ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500'
+                        : confirmPassword && password === confirmPassword
+                        ? 'border-emerald-500 focus:border-emerald-500 focus:ring-emerald-500'
+                        : 'border-[var(--cs-line)] focus:border-[var(--cs-brand)] focus:ring-[var(--cs-brand)]'
+                    } bg-[var(--cs-surface)] text-sm text-[var(--cs-ink)] placeholder-[var(--cs-ink-3)] focus:outline-none focus:ring-1 transition`}
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Re-enter password"
+                    required
+                    minLength={6}
+                  />
                 </div>
+              </div>
+
+              {confirmPassword && password !== confirmPassword && (
+                <p className="text-[11px] text-rose-500 font-medium -mt-1">
+                  Passwords do not match
+                </p>
+              )}
+
+              <div>
+                <label className="block text-xs font-medium text-[var(--cs-ink-2)] mb-1">
+                  FinOps Role &amp; Authority
+                </label>
+                <select
+                  className="w-full h-10 px-3 rounded-lg border border-[var(--cs-line)] bg-[var(--cs-surface)] text-sm text-[var(--cs-ink)] focus:outline-none focus:border-[var(--cs-brand)] focus:ring-1 focus:ring-[var(--cs-brand)] transition"
+                  value={role}
+                  onChange={(e) => setRole(e.target.value as UserRole)}
+                >
+                  <option value="admin">Administrator (Full Approval Authority)</option>
+                  <option value="finops_analyst">FinOps Analyst (Forecasts &amp; SHAP)</option>
+                  <option value="cloud_engineer">Cloud Engineer (Infrastructure Explorer)</option>
+                  <option value="viewer">Executive Viewer (Read-only)</option>
+                </select>
               </div>
             </div>
 
@@ -428,6 +462,16 @@ export const SignupPage: React.FC = () => {
                       </div>
                     )}
                   </div>
+
+                  {stsResult && !stsResult.success && stsResult.error && (
+                    <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-600 dark:text-amber-400 space-y-1">
+                      <p className="font-semibold flex items-center gap-1">
+                        <AlertCircle size={12} />
+                        AWS STS Handshake Notice:
+                      </p>
+                      <p className="leading-relaxed opacity-95">{stsResult.error}</p>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="p-4 rounded-xl bg-purple-500/5 border border-purple-500/20 text-xs space-y-1.5">

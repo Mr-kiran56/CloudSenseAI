@@ -13,7 +13,7 @@ import { useApp } from '../context/AppContext';
 export const ApprovalsPage: React.FC = () => {
   const navigate = useNavigate();
   const { user, hasPermission } = useAuth();
-  const { addToast } = useApp();
+  const { addToast, selectedAccount } = useApp();
   const [loading, setLoading] = useState(true);
   const [approvals, setApprovals] = useState<ApprovalItem[]>([]);
   const [processingId, setProcessingId] = useState<string | null>(null);
@@ -22,7 +22,7 @@ export const ApprovalsPage: React.FC = () => {
     async function loadData() {
       setLoading(true);
       try {
-        const res = await apiService.getApprovals();
+        const res = await apiService.getApprovals(selectedAccount?.accountId);
         setApprovals(res.data);
       } catch (err) {
         console.error('Failed to load approvals:', err);
@@ -31,12 +31,12 @@ export const ApprovalsPage: React.FC = () => {
       }
     }
     loadData();
-  }, []);
+  }, [selectedAccount?.accountId]);
 
   const handleApprove = async (item: ApprovalItem) => {
     setProcessingId(item.id);
     try {
-      const res = await apiService.approveRecommendation(item.recommendationId, user.name);
+      const res = await apiService.approveRecommendation(item.recommendationId, user.name, item.id);
       if (res.success) {
         setApprovals((prev) =>
           prev.map((a) => (a.id === item.id ? { ...a, status: 'approved' as const } : a))
@@ -61,7 +61,7 @@ export const ApprovalsPage: React.FC = () => {
   const handleReject = async (item: ApprovalItem) => {
     setProcessingId(item.id);
     try {
-      await apiService.rejectRecommendation(item.recommendationId, 'Rejected by operator');
+      await apiService.rejectRecommendation(item.recommendationId, 'Rejected by operator', item.id);
       setApprovals((prev) =>
         prev.map((a) => (a.id === item.id ? { ...a, status: 'rejected' as const } : a))
       );
@@ -99,9 +99,18 @@ export const ApprovalsPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="space-y-4">
-        {approvals.map((item) => (
-          <Card key={item.id} className="p-6 space-y-4">
+      {approvals.length === 0 ? (
+        <Card className="p-12 text-center border-dashed border-[var(--cs-line)]">
+          <CheckSquare className="w-10 h-10 text-[var(--cs-ink-3)] mx-auto mb-3 opacity-60" />
+          <h3 className="text-base font-medium text-[var(--cs-ink)]">No Pending Approvals</h3>
+          <p className="text-xs text-[var(--cs-ink-3)] max-w-md mx-auto mt-1">
+            All automated remediation requests have been processed or no actions currently require human sign-off for {selectedAccount?.name || 'this account'}.
+          </p>
+        </Card>
+      ) : (
+        <div className="space-y-4">
+          {approvals.map((item) => (
+            <Card key={item.id} className="p-6 space-y-4">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs">
               <div className="space-y-1.5 flex-1">
                 <div className="flex items-center gap-2">
@@ -158,6 +167,7 @@ export const ApprovalsPage: React.FC = () => {
           </Card>
         ))}
       </div>
+      )}
     </div>
   );
 };

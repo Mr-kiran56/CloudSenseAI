@@ -29,7 +29,7 @@ export const RecommendationDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user, hasPermission } = useAuth();
-  const { addToast } = useApp();
+  const { addToast, selectedAccount } = useApp();
 
   const [loading, setLoading] = useState(true);
   const [recommendation, setRecommendation] = useState<Recommendation | null>(null);
@@ -42,8 +42,8 @@ export const RecommendationDetailPage: React.FC = () => {
     async function loadData() {
       setLoading(true);
       try {
-        const res = await apiService.getRecommendations();
-        const found = res.data.find((r) => r.id === id) || res.data[0];
+        const res = await apiService.getRecommendations(selectedAccount?.accountId);
+        const found = res.data.find((r) => r.id === id) || null;
         setRecommendation(found);
       } catch (err) {
         console.error('Failed to load recommendation detail:', err);
@@ -52,9 +52,26 @@ export const RecommendationDetailPage: React.FC = () => {
       }
     }
     loadData();
-  }, [id]);
+  }, [id, selectedAccount?.accountId]);
 
-  if (loading || !recommendation) return <Skeleton className="h-96 w-full" />;
+  if (loading) return <Skeleton className="h-96 w-full" />;
+
+  if (!recommendation) {
+    return (
+      <div className="space-y-6 font-sans">
+        <Button variant="ghost" size="sm" icon={<ArrowLeft className="w-4 h-4" />} onClick={() => navigate('/recommendations')}>
+          Back to Recommendations
+        </Button>
+        <Card className="p-12 text-center border-dashed border-[var(--cs-line)]">
+          <Sparkles className="w-10 h-10 text-[var(--cs-ink-3)] mx-auto mb-3 opacity-60" />
+          <h3 className="text-base font-semibold text-[var(--cs-ink)]">Recommendation Not Found</h3>
+          <p className="text-xs text-[var(--cs-ink-3)] max-w-md mx-auto mt-1">
+            The requested recommendation does not exist or is not associated with {selectedAccount?.name || 'this account'}.
+          </p>
+        </Card>
+      </div>
+    );
+  }
 
   const canApprove = hasPermission('approve');
 

@@ -1,11 +1,17 @@
 import os
 import json
 import csv
+import uuid
+import datetime
 from pathlib import Path
-from fastapi import APIRouter, HTTPException, Query, Body
+from fastapi import APIRouter, HTTPException, Query, Body, Depends
+from sqlalchemy.orm import Session
 from typing import Dict, Any, List, Optional
 from ...core.config import settings
 from ...ml.model_service import ml_service
+from ...db.session import get_db
+from ...db.models import AnomalyIncident, Notification, AuditEvent
+from .integrations import dispatch_notification_to_webhooks
 
 router = APIRouter(prefix="/synthesis", tags=["Raw Synthesis Data & Verification"])
 
@@ -133,7 +139,10 @@ def get_model_evaluations() -> Dict[str, Any]:
     }
 
 @router.post("/simulate-dow-attack")
-def simulate_dow_attack(attack_intensity: float = Body(default=1.5, embed=True)):
+def simulate_dow_attack(
+    attack_intensity: float = Body(default=1.5, embed=True),
+    db: Session = Depends(get_db)
+):
     """Simulate a Denial-of-Wallet attack stream and score it in real time through Model C."""
     window = {
         "cost_velocity": 4.8 * attack_intensity,
@@ -144,8 +153,68 @@ def simulate_dow_attack(attack_intensity: float = Body(default=1.5, embed=True))
         "promo_active": False
     }
     score_result = ml_service.anomaly_detector.score_window(window)
+
+    incident_id = f"inc_dow_{uuid.uuid4().hex[:6]}"
+    is_alert = score_result.get("isAlert", True)
+    triage_class = score_result.get("triageClass", "dow_candidate")
+    anomaly_score = float(score_result.get("anomalyScore", 14.8))
+    threshold = float(score_result.get("threshold", 11.2454))
+
+    # Persist incident in database
+    if is_alert:
+        incident = AnomalyIncident(
+            incident_id=incident_id,
+            title=f"Denial-of-Wallet (DoW) Wave: {triage_class.replace('_', ' ').title()}",
+            service="Lambda",
+            resource_id="arn:aws:lambda:us-east-1:123456789012:function:checkout-payment-handler",
+            score=anomaly_score,
+            threshold=threshold,
+            severity="critical",
+            status="investigating",
+            triage_class=triage_class,
+            root_cause=f"High-frequency request surge ({window['request_rate']:.1f} req/s) with abnormal cost velocity (+{window['cost_velocity']*100:.0f}%) and 0% transaction conversion.",
+            detected_at=datetime.datetime.utcnow(),
+            evidence_json=json.dumps({"window": window, "score_result": score_result})
+        )
+        db.add(incident)
+
+        # Persist notification
+        notif = Notification(
+            title=f"Critical: Denial-of-Wallet Wave Detected (Score: {anomaly_score:.2f})",
+            message=f"Model C hybrid detector flagged abnormal cost velocity on Lambda checkout API. Recommended action: WAF rate-limiting policy.",
+            severity="critical",
+            category="dow",
+            read=False,
+            created_at=datetime.datetime.utcnow(),
+            link="/anomalies-dow"
+        )
+        db.add(notif)
+
+        # Persist audit event
+        audit = AuditEvent(
+            event_id=f"evt_dow_{uuid.uuid4().hex[:6]}",
+            actor="Model C Ensemble (IsoForest + Rule Engine)",
+            action="DOW_ANOMALY_TRIGGERED",
+            target="arn:aws:lambda:us-east-1:123456789012:function:checkout-payment-handler",
+            target_type="LAMBDA_FUNCTION",
+            status="SUCCESS",
+            details_json=json.dumps(score_result)
+        )
+        db.add(audit)
+        db.commit()
+
+        # Outbound notification dispatch
+        dispatch_notification_to_webhooks(
+            event_type="anomaly",
+            title=f"ALERT: Denial-of-Wallet (DoW) Ingress Wave (Model C Score {anomaly_score:.2f})",
+            description=f"Model C ensemble detected malicious cost velocity expansion on Lambda checkout-payment-handler. Anomaly score {anomaly_score:.2f} exceeded calibrated threshold {threshold:.2f}.",
+            data={"incident_id": incident_id, "score": anomaly_score, "triage": triage_class}
+        )
+
     return {
+        "incident_id": incident_id,
         "simulation_parameters": window,
         "model_c_inference": score_result,
+        "persisted_to_db": is_alert,
         "mitigation_action": "Trigger AWS WAF IP rate-limiting rule + prepare human approval item"
     }

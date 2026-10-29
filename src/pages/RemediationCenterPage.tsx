@@ -9,7 +9,7 @@ import { PlayCircle, CheckCircle2, Clock, AlertTriangle, Workflow, ShieldCheck, 
 import { useApp } from '../context/AppContext';
 
 export const RemediationCenterPage: React.FC = () => {
-  const { addToast } = useApp();
+  const { addToast, selectedAccount } = useApp();
   const [loading, setLoading] = useState(true);
   const [jobs, setJobs] = useState<RemediationJob[]>([]);
   const [selectedJob, setSelectedJob] = useState<RemediationJob | null>(null);
@@ -18,9 +18,10 @@ export const RemediationCenterPage: React.FC = () => {
     async function loadData() {
       setLoading(true);
       try {
-        const res = await apiService.getRemediationJobs();
+        const res = await apiService.getRemediationJobs(selectedAccount?.accountId);
         setJobs(res.data);
         if (res.data.length > 0) setSelectedJob(res.data[0]);
+        else setSelectedJob(null);
       } catch (err) {
         console.error('Failed to load remediation jobs:', err);
       } finally {
@@ -28,7 +29,7 @@ export const RemediationCenterPage: React.FC = () => {
       }
     }
     loadData();
-  }, []);
+  }, [selectedAccount?.accountId]);
 
   if (loading) return <Skeleton className="h-96 w-full" />;
 
@@ -49,12 +50,21 @@ export const RemediationCenterPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Jobs List (1 Col) */}
-        <Card className="p-0 overflow-hidden">
-          <div className="p-3 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 font-semibold text-xs text-slate-900 dark:text-slate-100">
-            Execution Log Jobs ({jobs.length})
-          </div>
+      {jobs.length === 0 ? (
+        <Card className="p-12 text-center border-dashed border-[var(--cs-line)]">
+          <PlayCircle className="w-10 h-10 text-[var(--cs-ink-3)] mx-auto mb-3 opacity-60" />
+          <h3 className="text-base font-medium text-[var(--cs-ink)]">No Remediation Jobs Executed</h3>
+          <p className="text-xs text-[var(--cs-ink-3)] max-w-md mx-auto mt-1">
+            When recommendations are approved in the Governance queue, MCP execution logs and Boto3 SDK run timelines for {selectedAccount?.name || 'this account'} will appear here.
+          </p>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Jobs List (1 Col) */}
+          <Card className="p-0 overflow-hidden">
+            <div className="p-3 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 font-semibold text-xs text-slate-900 dark:text-slate-100">
+              Execution Log Jobs ({jobs.length})
+            </div>
 
           <div className="divide-y divide-slate-100 dark:divide-slate-800">
             {jobs.map((job) => (
@@ -168,6 +178,7 @@ export const RemediationCenterPage: React.FC = () => {
           </Card>
         ) : null}
       </div>
+      )}
     </div>
   );
 };

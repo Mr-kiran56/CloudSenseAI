@@ -87,8 +87,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!email.includes('@')) return { ok: false, error: 'Enter a valid work email.' };
     if (password.length < 4) return { ok: false, error: 'Password must be at least 4 characters.' };
 
-    // 1. Try real backend authentication
-    const backendRes = await apiService.login(email, password);
+    // 1. Authenticate against database API
+    const backendRes = await apiService.login(email.toLowerCase().trim(), password);
     if (backendRes.success && backendRes.user) {
       const u = backendRes.user;
       const nextUser: UserProfile = {
@@ -104,32 +104,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { ok: true };
     }
 
-    // 2. Seamless local fallback if backend is offline or using standard demo accounts
-    if (
-      (email === 'admin@cloudsense.ai' && password.includes('123456')) ||
-      (email === 'analyst@cloudsense.ai' && password.includes('123456')) ||
-      (email === 'engineer@cloudsense.ai' && password.includes('123456')) ||
-      email.includes('@')
-    ) {
-      const role: UserRole = email.includes('admin')
-        ? 'admin'
-        : email.includes('analyst')
-        ? 'finops_analyst'
-        : 'cloud_engineer';
-
-      const nextUser: UserProfile = {
-        ...mockUserProfile,
-        email,
-        name: email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
-        role,
-      };
-      setUser(nextUser);
-      setIsAuthenticated(true);
-      persist({ authenticated: true, user: nextUser });
-      return { ok: true };
-    }
-
-    return { ok: false, error: backendRes.error || 'Authentication failed. Please check credentials.' };
+    // 2. Strict error rejection: do NOT bypass with email.includes('@')
+    return {
+      ok: false,
+      error: backendRes.error || 'Invalid credentials. Please verify your email and password.',
+    };
   };
 
   const signup = async (
@@ -141,9 +120,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   ): Promise<{ ok: boolean; error?: string }> => {
     if (name.trim().length < 2) return { ok: false, error: 'Enter your name.' };
     if (!email.includes('@')) return { ok: false, error: 'Enter a valid work email.' };
-    if (password.length < 6) return { ok: false, error: 'Use at least 6 characters.' };
+    if (password.length < 6) return { ok: false, error: 'Use at least 6 characters for the password.' };
 
-    const backendRes = await apiService.register(name, email, password, role, awsData);
+    const backendRes = await apiService.register(name, email.toLowerCase().trim(), password, role, awsData);
     if (backendRes.success && backendRes.user) {
       const u = backendRes.user;
       const nextUser: UserProfile = {
@@ -159,17 +138,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { ok: true };
     }
 
-    // Fallback
-    const nextUser: UserProfile = {
-      ...mockUserProfile,
-      name: name.trim(),
-      email,
-      role,
+    // Return the actual database validation error (e.g. Email is already registered)
+    return {
+      ok: false,
+      error: backendRes.error || 'Registration failed. This email may already have an account.',
     };
-    setUser(nextUser);
-    setIsAuthenticated(true);
-    persist({ authenticated: true, user: nextUser });
-    return { ok: true };
   };
 
   const logout = () => {
