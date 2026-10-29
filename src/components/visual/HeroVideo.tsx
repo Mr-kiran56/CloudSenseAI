@@ -20,15 +20,15 @@ export const HeroVideo: React.FC = () => {
   }, []);
 
   return (
-    <div className="relative w-full h-full min-h-[440px] sm:min-h-[500px] lg:min-h-[550px] xl:min-h-[580px] flex items-center justify-center lg:justify-end select-none">
+    <div className="relative w-full h-full flex items-center justify-center lg:justify-end select-none py-1">
       {/* Soft atmospheric ambient glow behind the video */}
       <div
-        className="absolute -inset-8 lg:-inset-12 bg-gradient-to-tr from-blue-500/10 via-sky-400/8 to-indigo-500/8 rounded-full blur-3xl pointer-events-none -z-10"
+        className="absolute -inset-4 sm:-inset-6 lg:-inset-8 bg-gradient-to-tr from-blue-500/10 via-sky-400/8 to-indigo-500/8 rounded-3xl blur-3xl pointer-events-none -z-10"
         aria-hidden
       />
 
-      {/* Main presentation canvas - matches exact height of left column, collapses seamlessly into white hero surface */}
-      <div className="relative w-full max-w-[600px] xl:max-w-[640px] h-full min-h-[440px] sm:min-h-[500px] lg:min-h-[550px] xl:min-h-[580px] flex items-center justify-center overflow-hidden border-0 outline-none shadow-none isolate">
+      {/* Main presentation canvas - vertical 9:16 mobile fit, matching left text height, zero borders */}
+      <div className="relative w-auto h-[480px] sm:h-[540px] md:h-[580px] lg:h-[600px] xl:h-[620px] aspect-[9/16] max-w-full flex items-center justify-center overflow-hidden border-0 outline-none shadow-none isolate">
         <video
           ref={videoRef}
           src={heroVideoSource || '/cloudsense-intro.mp4'}
@@ -39,58 +39,40 @@ export const HeroVideo: React.FC = () => {
           playsInline
           preload="auto"
           aria-label="CloudSense AI animated network and cloud cost intelligence visualization"
-          className="w-full h-full object-cover object-center scale-[1.03] transform-gpu pointer-events-none select-none border-none outline-none"
+          className="w-full h-full object-cover object-center pointer-events-none select-none border-none outline-none"
           style={{
             WebkitMaskImage:
-              'radial-gradient(ellipse 75% 72% at 50% 50%, black 38%, rgba(0,0,0,0.85) 55%, rgba(0,0,0,0.3) 70%, transparent 82%)',
+              'radial-gradient(ellipse 96% 96% at 50% 50%, black 86%, rgba(0,0,0,0.85) 93%, transparent 100%)',
             maskImage:
-              'radial-gradient(ellipse 75% 72% at 50% 50%, black 38%, rgba(0,0,0,0.85) 55%, rgba(0,0,0,0.3) 70%, transparent 82%)',
+              'radial-gradient(ellipse 96% 96% at 50% 50%, black 86%, rgba(0,0,0,0.85) 93%, transparent 100%)',
           }}
         />
 
-        {/* 1. Perimeter radial feather - dissolves perimeter seamlessly into var(--cs-surface) */}
+        {/* 1. Subtle Perimeter feather - only touches the outermost 6% of edges */}
         <div
-          className="absolute -inset-2 pointer-events-none z-10"
+          className="absolute inset-0 pointer-events-none z-10"
           style={{
             background:
-              'radial-gradient(ellipse 78% 75% at 50% 50%, transparent 46%, rgba(255,255,255,0.4) 60%, rgba(255,255,255,0.85) 74%, var(--cs-surface) 85%)',
+              'radial-gradient(ellipse 94% 94% at 50% 50%, transparent 84%, rgba(255,255,255,0.4) 92%, var(--cs-surface) 100%)',
           }}
           aria-hidden
         />
 
-        {/* 2. Soft Left edge feather - dissolves left boundary seamlessly into text column */}
+        {/* 2. Corner dissolves - softly melts ONLY the 4 outer corners into white without hazing the video */}
         <div
-          className="absolute inset-y-0 -left-2 w-24 sm:w-32 bg-gradient-to-r from-[var(--cs-surface)] from-15% via-[var(--cs-surface)]/85 to-transparent pointer-events-none z-20"
+          className="absolute -top-1 -right-1 w-12 h-12 bg-[radial-gradient(circle_at_top_right,var(--cs-surface)_40%,transparent_100%)] pointer-events-none z-20"
           aria-hidden
         />
-
-        {/* 3. Soft Right edge feather - wide feather extending beyond right edge to ensure zero border line */}
         <div
-          className="absolute inset-y-0 -right-2 w-28 sm:w-36 bg-gradient-to-l from-[var(--cs-surface)] from-20% via-[var(--cs-surface)]/90 to-transparent pointer-events-none z-20"
+          className="absolute -top-1 -left-1 w-12 h-12 bg-[radial-gradient(circle_at_top_left,var(--cs-surface)_40%,transparent_100%)] pointer-events-none z-20"
           aria-hidden
         />
-
-        {/* 4. Soft Top edge feather */}
         <div
-          className="absolute inset-x-0 -top-2 h-16 sm:h-20 bg-gradient-to-b from-[var(--cs-surface)] from-15% via-[var(--cs-surface)]/85 to-transparent pointer-events-none z-20"
+          className="absolute -bottom-1 -right-1 w-12 h-12 bg-[radial-gradient(circle_at_bottom_right,var(--cs-surface)_40%,transparent_100%)] pointer-events-none z-20"
           aria-hidden
         />
-
-        {/* 5. Soft Bottom edge feather */}
         <div
-          className="absolute inset-x-0 -bottom-2 h-20 sm:h-24 bg-gradient-to-t from-[var(--cs-surface)] from-15% via-[var(--cs-surface)]/85 to-transparent pointer-events-none z-20"
-          aria-hidden
-        />
-
-        {/* 6. Top-right corner dissolve patch - eliminates any corner line artifact */}
-        <div
-          className="absolute -top-3 -right-3 w-36 h-36 bg-[radial-gradient(circle_at_top_right,var(--cs-surface)_45%,transparent_100%)] pointer-events-none z-20"
-          aria-hidden
-        />
-
-        {/* 7. Bottom-right corner dissolve patch - eliminates any bottom-right corner line artifact */}
-        <div
-          className="absolute -bottom-3 -right-3 w-36 h-36 bg-[radial-gradient(circle_at_bottom_right,var(--cs-surface)_45%,transparent_100%)] pointer-events-none z-20"
+          className="absolute -bottom-1 -left-1 w-12 h-12 bg-[radial-gradient(circle_at_bottom_left,var(--cs-surface)_40%,transparent_100%)] pointer-events-none z-20"
           aria-hidden
         />
       </div>
