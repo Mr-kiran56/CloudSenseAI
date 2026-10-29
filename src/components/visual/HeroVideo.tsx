@@ -20,15 +20,15 @@ export const HeroVideo: React.FC = () => {
   }, []);
 
   return (
-    <div className="relative w-full h-full flex items-center justify-center lg:justify-end select-none py-1">
+    <div className="relative w-full flex items-center justify-center lg:justify-end select-none py-1">
       {/* Soft atmospheric ambient glow behind the video */}
       <div
-        className="absolute -inset-4 sm:-inset-6 lg:-inset-8 bg-gradient-to-tr from-blue-500/10 via-sky-400/8 to-indigo-500/8 rounded-3xl blur-3xl pointer-events-none -z-10"
+        className="absolute -inset-6 lg:-inset-10 bg-gradient-to-tr from-blue-500/10 via-sky-400/8 to-indigo-500/8 rounded-full blur-3xl pointer-events-none -z-10"
         aria-hidden
       />
 
-      {/* Main presentation canvas - vertical 9:16 mobile fit, matching left text height, zero borders */}
-      <div className="relative w-auto h-[480px] sm:h-[540px] md:h-[580px] lg:h-[600px] xl:h-[620px] aspect-[9/16] max-w-full flex items-center justify-center overflow-hidden border-0 outline-none shadow-none isolate">
+      {/* Main presentation canvas - increased width, decreased height, zero borders */}
+      <div className="relative w-full max-w-[580px] lg:max-w-[620px] xl:max-w-[660px] h-[420px] sm:h-[460px] md:h-[480px] lg:h-[500px] xl:h-[520px] flex items-center justify-center overflow-hidden border-0 outline-none shadow-none isolate">
         <video
           ref={videoRef}
           src={heroVideoSource || '/cloudsense-intro.mp4'}
@@ -39,40 +39,64 @@ export const HeroVideo: React.FC = () => {
           playsInline
           preload="auto"
           aria-label="CloudSense AI animated network and cloud cost intelligence visualization"
-          className="w-full h-full object-cover object-center pointer-events-none select-none border-none outline-none"
+          className="w-full h-full object-cover object-[center_38%] scale-[1.03] transform-gpu pointer-events-none select-none border-none outline-none"
           style={{
             WebkitMaskImage:
-              'radial-gradient(ellipse 96% 96% at 50% 50%, black 86%, rgba(0,0,0,0.85) 93%, transparent 100%)',
+              'radial-gradient(ellipse 88% 84% at 50% 50%, black 55%, rgba(0,0,0,0.85) 75%, rgba(0,0,0,0.3) 88%, transparent 97%)',
             maskImage:
-              'radial-gradient(ellipse 96% 96% at 50% 50%, black 86%, rgba(0,0,0,0.85) 93%, transparent 100%)',
+              'radial-gradient(ellipse 88% 84% at 50% 50%, black 55%, rgba(0,0,0,0.85) 75%, rgba(0,0,0,0.3) 88%, transparent 97%)',
           }}
         />
 
-        {/* 1. Subtle Perimeter feather - only touches the outermost 6% of edges */}
+        {/* 1. Perimeter radial feather - gently melts the outer perimeter into var(--cs-surface) */}
         <div
-          className="absolute inset-0 pointer-events-none z-10"
+          className="absolute -inset-2 pointer-events-none z-10"
           style={{
             background:
-              'radial-gradient(ellipse 94% 94% at 50% 50%, transparent 84%, rgba(255,255,255,0.4) 92%, var(--cs-surface) 100%)',
+              'radial-gradient(ellipse 88% 84% at 50% 50%, transparent 58%, rgba(255,255,255,0.4) 74%, rgba(255,255,255,0.85) 86%, var(--cs-surface) 95%)',
           }}
           aria-hidden
         />
 
-        {/* 2. Corner dissolves - softly melts ONLY the 4 outer corners into white without hazing the video */}
+        {/* 2. Soft Left edge feather - dissolves the monitor left bezel cut seamlessly into the white hero canvas */}
         <div
-          className="absolute -top-1 -right-1 w-12 h-12 bg-[radial-gradient(circle_at_top_right,var(--cs-surface)_40%,transparent_100%)] pointer-events-none z-20"
+          className="absolute inset-y-0 -left-2 w-20 sm:w-28 bg-gradient-to-r from-[var(--cs-surface)] from-15% via-[var(--cs-surface)]/80 to-transparent pointer-events-none z-20"
+          aria-hidden
+        />
+
+        {/* 3. Soft Right edge feather - dissolves the right boundary seamlessly into the white hero canvas */}
+        <div
+          className="absolute inset-y-0 -right-2 w-20 sm:w-28 bg-gradient-to-l from-[var(--cs-surface)] from-15% via-[var(--cs-surface)]/80 to-transparent pointer-events-none z-20"
+          aria-hidden
+        />
+
+        {/* 4. Soft Top edge feather */}
+        <div
+          className="absolute inset-x-0 -top-2 h-14 sm:h-18 bg-gradient-to-b from-[var(--cs-surface)] from-15% via-[var(--cs-surface)]/80 to-transparent pointer-events-none z-20"
+          aria-hidden
+        />
+
+        {/* 5. Soft Bottom edge feather */}
+        <div
+          className="absolute inset-x-0 -bottom-2 h-14 sm:h-18 bg-gradient-to-t from-[var(--cs-surface)] from-15% via-[var(--cs-surface)]/80 to-transparent pointer-events-none z-20"
+          aria-hidden
+        />
+
+        {/* 6. Four corner dissolve patches - guarantees zero sharp corner lines */}
+        <div
+          className="absolute -top-2 -right-2 w-20 h-20 bg-[radial-gradient(circle_at_top_right,var(--cs-surface)_45%,transparent_100%)] pointer-events-none z-20"
           aria-hidden
         />
         <div
-          className="absolute -top-1 -left-1 w-12 h-12 bg-[radial-gradient(circle_at_top_left,var(--cs-surface)_40%,transparent_100%)] pointer-events-none z-20"
+          className="absolute -top-2 -left-2 w-20 h-20 bg-[radial-gradient(circle_at_top_left,var(--cs-surface)_45%,transparent_100%)] pointer-events-none z-20"
           aria-hidden
         />
         <div
-          className="absolute -bottom-1 -right-1 w-12 h-12 bg-[radial-gradient(circle_at_bottom_right,var(--cs-surface)_40%,transparent_100%)] pointer-events-none z-20"
+          className="absolute -bottom-2 -right-2 w-20 h-20 bg-[radial-gradient(circle_at_bottom_right,var(--cs-surface)_45%,transparent_100%)] pointer-events-none z-20"
           aria-hidden
         />
         <div
-          className="absolute -bottom-1 -left-1 w-12 h-12 bg-[radial-gradient(circle_at_bottom_left,var(--cs-surface)_40%,transparent_100%)] pointer-events-none z-20"
+          className="absolute -bottom-2 -left-2 w-20 h-20 bg-[radial-gradient(circle_at_bottom_left,var(--cs-surface)_45%,transparent_100%)] pointer-events-none z-20"
           aria-hidden
         />
       </div>
