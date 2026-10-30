@@ -50,14 +50,30 @@ const pipeline = [
 ];
 
 export const LandingPage: React.FC = () => {
+  const contentRef = React.useRef<HTMLDivElement>(null);
+  const [contentHeight, setContentHeight] = React.useState<number | undefined>(undefined);
+
+  React.useEffect(() => {
+    if (!contentRef.current) return;
+    const update = () => {
+      if (contentRef.current) {
+        setContentHeight(contentRef.current.offsetHeight);
+      }
+    };
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(contentRef.current);
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <div>
       <section className="relative overflow-hidden bg-[var(--cs-surface)] border-b border-[var(--cs-line)]">
         <div className="mx-auto max-w-[1120px] px-4 py-12 md:py-16 lg:py-20">
           <GoogleDots size="md" />
-          <div className="mt-3 grid lg:grid-cols-[1.25fr_0.75fr] gap-8 lg:gap-12 items-stretch">
-            <div className="z-20 relative flex flex-col justify-between">
-              <div>
+          <div className="mt-3 grid lg:grid-cols-[1.28fr_0.72fr] gap-8 lg:gap-12 items-start">
+            <div className="z-20 relative">
+              <div ref={contentRef}>
                 <p className="text-[12px] leading-none font-medium uppercase tracking-[0.08em] text-[var(--cs-ink-3)]">
                   FinOps · SecOps · Explainable AI
                 </p>
@@ -69,30 +85,30 @@ export const LandingPage: React.FC = () => {
                   scores unit economics, surfaces idle and oversized resources, explains recommendations, and routes
                   remediation through Model Context Protocol and AWS SDK (Boto3) on a secure backend.
                 </p>
+                <div className="mt-8 flex flex-wrap items-center gap-3">
+                  <Link
+                    to="/signup"
+                    className="h-10 px-5 inline-flex items-center gap-2 rounded-[4px] bg-[var(--cs-brand)] text-white text-[14px] font-medium transition-colors hover:bg-[var(--cs-brand-hover)] shrink-0"
+                  >
+                    Create a workspace <ArrowRight className="w-4 h-4" />
+                  </Link>
+                  <Link
+                    to="/login"
+                    className="h-10 px-5 inline-flex items-center rounded-[4px] border border-[var(--cs-line-strong)] text-[14px] text-[var(--cs-brand)] bg-[var(--cs-surface)] hover:bg-[var(--cs-muted)] transition-colors shrink-0"
+                  >
+                    Sign in to console
+                  </Link>
+                  <Link to="/architecture" className="h-10 px-3 inline-flex items-center text-[14px] text-[var(--cs-ink-2)] hover:text-[var(--cs-ink)] transition-colors shrink-0">
+                    Read the architecture
+                  </Link>
+                </div>
               </div>
-              <div className="mt-8 flex flex-wrap items-center gap-3">
-                <Link
-                  to="/signup"
-                  className="h-10 px-5 inline-flex items-center gap-2 rounded-[4px] bg-[var(--cs-brand)] text-white text-[14px] font-medium transition-colors hover:bg-[var(--cs-brand-hover)] shrink-0"
-                >
-                  Create a workspace <ArrowRight className="w-4 h-4" />
-                </Link>
-                <Link
-                  to="/login"
-                  className="h-10 px-5 inline-flex items-center rounded-[4px] border border-[var(--cs-line-strong)] text-[14px] text-[var(--cs-brand)] bg-[var(--cs-surface)] hover:bg-[var(--cs-muted)] transition-colors shrink-0"
-                >
-                  Sign in to console
-                </Link>
-                <Link to="/architecture" className="h-10 px-3 inline-flex items-center text-[14px] text-[var(--cs-ink-2)] hover:text-[var(--cs-ink)] transition-colors shrink-0">
-                  Read the architecture
-                </Link>
-              </div>
+              <p className="mt-4 text-[12px] text-[var(--cs-ink-3)]">
+                Console currently runs on labeled demo data. AWS credentials are never stored in the browser.
+              </p>
             </div>
-            <HeroVideo />
+            <HeroVideo targetHeight={contentHeight} />
           </div>
-          <p className="mt-4 text-[12px] text-[var(--cs-ink-3)]">
-            Console currently runs on labeled demo data. AWS credentials are never stored in the browser.
-          </p>
         </div>
       </section>
 

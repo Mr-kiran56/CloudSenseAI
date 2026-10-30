@@ -2,7 +2,11 @@ import React, { useRef, useEffect } from 'react';
 import heroVideoSource from '../../assets/cloudsense-intro.mp4';
 import heroPosterSource from '../../assets/hero-poster.png';
 
-export const HeroVideo: React.FC = () => {
+interface HeroVideoProps {
+  targetHeight?: number;
+}
+
+export const HeroVideo: React.FC<HeroVideoProps> = ({ targetHeight }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -20,7 +24,7 @@ export const HeroVideo: React.FC = () => {
   }, []);
 
   return (
-    <div className="relative w-full h-full flex justify-center lg:justify-end select-none">
+    <div className="relative w-full flex justify-center lg:justify-end select-none">
       {/* Soft atmospheric ambient glow behind the video */}
       <div
         className="absolute -inset-4 sm:-inset-6 bg-gradient-to-tr from-blue-500/10 via-sky-400/8 to-indigo-500/10 rounded-[28px] blur-2xl pointer-events-none -z-10"
@@ -30,9 +34,14 @@ export const HeroVideo: React.FC = () => {
       {/* Main presentation canvas:
           - Top border exactly matches the top of "FinOps · SecOps · Explainable AI"
           - Bottom border exactly matches the bottom of "Create a workspace" buttons row
-          - Uses full stretch height (h-full) with proportional width (max-w-[420px] xl:max-w-[440px])
+          - Uses exact measured pixel height (targetHeight) with proportional width
           - Textured rounded corners (rounded-[20px]) with subtle border line and soft shadow */}
-      <div className="relative w-full max-w-[420px] xl:max-w-[440px] aspect-[1.05/1] lg:aspect-auto h-full rounded-[20px] overflow-hidden border border-[var(--cs-line)] bg-[var(--cs-surface)] shadow-xl shadow-slate-900/5 ring-1 ring-black/[0.04] dark:ring-white/[0.08] flex items-center justify-center isolate">
+      <div
+        className="relative w-full max-w-[400px] xl:max-w-[420px] rounded-[20px] overflow-hidden border border-[var(--cs-line)] bg-[var(--cs-surface)] shadow-xl shadow-slate-900/5 ring-1 ring-black/[0.04] dark:ring-white/[0.08] flex items-center justify-center isolate"
+        style={{
+          height: targetHeight ? `${targetHeight}px` : '370px',
+        }}
+      >
         <video
           ref={videoRef}
           src={heroVideoSource || '/cloudsense-intro.mp4'}
