@@ -58,7 +58,7 @@ export const LandingPage: React.FC = () => {
           <div className="mt-3 grid lg:grid-cols-[1.25fr_0.75fr] gap-8 lg:gap-12 items-stretch">
             <div className="z-20 relative flex flex-col justify-between">
               <div>
-                <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-[var(--cs-ink-3)]">
+                <p className="text-[12px] leading-none font-medium uppercase tracking-[0.08em] text-[var(--cs-ink-3)]">
                   FinOps · SecOps · Explainable AI
                 </p>
                 <h1 className="mt-3 max-w-2xl text-[36px] md:text-[44px] leading-[1.15] font-normal tracking-tight text-[var(--cs-ink)]">
