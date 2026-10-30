@@ -155,6 +155,7 @@
   height: 22px;
   padding: 0 1px;
   overflow: visible;
+  width: fit-content;
 }
 
 .cs-gdot {
