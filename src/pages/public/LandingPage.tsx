@@ -53,42 +53,46 @@ export const LandingPage: React.FC = () => {
   return (
     <div>
       <section className="relative overflow-hidden bg-[var(--cs-surface)] border-b border-[var(--cs-line)]">
-        <div className="mx-auto max-w-[1120px] px-4 py-12 md:py-16 lg:py-20 grid lg:grid-cols-[1.25fr_0.75fr] gap-8 lg:gap-12 items-center">
-          <div className="z-20 relative">
+        <div className="mx-auto max-w-[1120px] px-4 py-12 md:py-16 lg:py-20">
           <GoogleDots size="md" />
-          <p className="mt-3 text-[12px] font-medium uppercase tracking-[0.08em] text-[var(--cs-ink-3)]">
-            FinOps · SecOps · Explainable AI
-          </p>
-          <h1 className="mt-3 max-w-2xl text-[36px] md:text-[44px] leading-[1.15] font-normal tracking-tight text-[var(--cs-ink)]">
-            See cloud spend, understand why it moved, and change AWS only after someone approves it.
-          </h1>
-          <p className="mt-4 max-w-xl text-[16px] leading-7 text-[var(--cs-ink-2)]">
-            CloudSense AI is an intelligent cloud resource and cost optimization framework. It forecasts cost,
-            scores unit economics, surfaces idle and oversized resources, explains recommendations, and routes
-            remediation through Model Context Protocol and AWS SDK (Boto3) on a secure backend.
-          </p>
-          <div className="mt-8 flex flex-wrap items-center gap-3">
-            <Link
-              to="/signup"
-              className="h-10 px-5 inline-flex items-center gap-2 rounded-[4px] bg-[var(--cs-brand)] text-white text-[14px] font-medium transition-colors hover:bg-[var(--cs-brand-hover)]"
-            >
-              Create a workspace <ArrowRight className="w-4 h-4" />
-            </Link>
-            <Link
-              to="/login"
-              className="h-10 px-5 inline-flex items-center rounded-[4px] border border-[var(--cs-line-strong)] text-[14px] text-[var(--cs-brand)] bg-[var(--cs-surface)] hover:bg-[var(--cs-muted)] transition-colors"
-            >
-              Sign in to console
-            </Link>
-            <Link to="/architecture" className="h-10 px-3 inline-flex items-center text-[14px] text-[var(--cs-ink-2)] hover:text-[var(--cs-ink)] transition-colors">
-              Read the architecture
-            </Link>
+          <div className="mt-3 grid lg:grid-cols-[1.25fr_0.75fr] gap-8 lg:gap-12 items-stretch">
+            <div className="z-20 relative flex flex-col justify-between">
+              <div>
+                <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-[var(--cs-ink-3)]">
+                  FinOps · SecOps · Explainable AI
+                </p>
+                <h1 className="mt-3 max-w-2xl text-[36px] md:text-[44px] leading-[1.15] font-normal tracking-tight text-[var(--cs-ink)]">
+                  See cloud spend, understand why it moved, and change AWS only after someone approves it.
+                </h1>
+                <p className="mt-4 max-w-xl text-[16px] leading-7 text-[var(--cs-ink-2)]">
+                  CloudSense AI is an intelligent cloud resource and cost optimization framework. It forecasts cost,
+                  scores unit economics, surfaces idle and oversized resources, explains recommendations, and routes
+                  remediation through Model Context Protocol and AWS SDK (Boto3) on a secure backend.
+                </p>
+              </div>
+              <div className="mt-8 flex flex-wrap items-center gap-3">
+                <Link
+                  to="/signup"
+                  className="h-10 px-5 inline-flex items-center gap-2 rounded-[4px] bg-[var(--cs-brand)] text-white text-[14px] font-medium transition-colors hover:bg-[var(--cs-brand-hover)] shrink-0"
+                >
+                  Create a workspace <ArrowRight className="w-4 h-4" />
+                </Link>
+                <Link
+                  to="/login"
+                  className="h-10 px-5 inline-flex items-center rounded-[4px] border border-[var(--cs-line-strong)] text-[14px] text-[var(--cs-brand)] bg-[var(--cs-surface)] hover:bg-[var(--cs-muted)] transition-colors shrink-0"
+                >
+                  Sign in to console
+                </Link>
+                <Link to="/architecture" className="h-10 px-3 inline-flex items-center text-[14px] text-[var(--cs-ink-2)] hover:text-[var(--cs-ink)] transition-colors shrink-0">
+                  Read the architecture
+                </Link>
+              </div>
+            </div>
+            <HeroVideo />
           </div>
           <p className="mt-4 text-[12px] text-[var(--cs-ink-3)]">
             Console currently runs on labeled demo data. AWS credentials are never stored in the browser.
           </p>
-          </div>
-          <HeroVideo />
         </div>
       </section>
 

@@ -20,7 +20,7 @@ export const HeroVideo: React.FC = () => {
   }, []);
 
   return (
-    <div className="relative w-full flex items-center justify-center lg:justify-end select-none">
+    <div className="relative w-full h-full flex items-center justify-center lg:justify-end select-none">
       {/* Soft atmospheric ambient glow behind the video */}
       <div
         className="absolute -inset-4 sm:-inset-6 bg-gradient-to-tr from-blue-500/10 via-sky-400/8 to-indigo-500/10 rounded-[28px] blur-2xl pointer-events-none -z-10"
@@ -28,11 +28,11 @@ export const HeroVideo: React.FC = () => {
       />
 
       {/* Main presentation canvas:
-          - Decreased video width (max-w-[440px] xl:max-w-[460px]) to give full priority to text column
-          - Clean nearly-square aspect ratio (~1:0.96)
-          - Decreased top height using object-[center_36%] to frame monitor prominently without headroom
-          - Textured rounded corners (rounded-[20px]) with subtle border and shadow, zero white haze */}
-      <div className="relative w-full max-w-[440px] xl:max-w-[460px] aspect-[1/0.96] rounded-[20px] overflow-hidden border border-[var(--cs-line)] bg-[var(--cs-surface)] shadow-xl shadow-slate-900/5 ring-1 ring-black/[0.04] dark:ring-white/[0.08] flex items-center justify-center isolate">
+          - Height matches exactly from "FinOps · SecOps · Explainable AI" to "Create a workspace" button (lg:h-full)
+          - Width is proportional to match the height cleanly (max-w-[420px] lg:max-w-[430px] aspect-[1.05/1] lg:aspect-auto)
+          - Framed with object-[center_36%] to keep the monitor centered without excess headroom
+          - Textured rounded corners (rounded-[20px]), subtle border, soft drop shadow, zero white haze */}
+      <div className="relative w-full max-w-[420px] lg:max-w-[430px] aspect-[1.05/1] lg:aspect-auto lg:h-full rounded-[20px] overflow-hidden border border-[var(--cs-line)] bg-[var(--cs-surface)] shadow-xl shadow-slate-900/5 ring-1 ring-black/[0.04] dark:ring-white/[0.08] flex items-center justify-center isolate">
         <video
           ref={videoRef}
           src={heroVideoSource || '/cloudsense-intro.mp4'}
