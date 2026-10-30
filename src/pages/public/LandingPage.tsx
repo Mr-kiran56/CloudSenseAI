@@ -53,7 +53,7 @@ export const LandingPage: React.FC = () => {
   return (
     <div>
       <section className="relative overflow-hidden bg-[var(--cs-surface)] border-b border-[var(--cs-line)]">
-        <div className="mx-auto max-w-[1220px] px-4 sm:px-6 lg:px-8 py-12 md:py-16 lg:py-20 grid lg:grid-cols-[1.1fr_1fr] xl:grid-cols-[1.08fr_0.92fr] gap-6 lg:gap-8 xl:gap-10 items-center">
+        <div className="mx-auto max-w-[1120px] px-4 py-10 md:py-14 lg:py-16 grid lg:grid-cols-2 gap-8 lg:gap-10 items-center">
           <div className="z-20 relative flex flex-col justify-center items-start">
           <GoogleDots size="md" />
           <p className="mt-3 text-[12px] font-medium uppercase tracking-[0.08em] text-[var(--cs-ink-3)]">
