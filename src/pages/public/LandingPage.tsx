@@ -71,8 +71,8 @@ export const LandingPage: React.FC = () => {
       <section className="relative overflow-hidden bg-[var(--cs-surface)] border-b border-[var(--cs-line)]">
         <div className="mx-auto max-w-[1120px] px-4 py-12 md:py-16 lg:py-20">
           <GoogleDots size="md" />
-          <div className="mt-3 grid lg:grid-cols-[1.18fr_0.82fr] gap-8 lg:gap-8 items-start">
-            <div className="z-10 relative">
+          <div className="mt-3 grid lg:grid-cols-[1.28fr_0.72fr] gap-8 lg:gap-12 items-start">
+            <div className="z-20 relative">
               <div ref={contentRef}>
                 <p className="text-[12px] leading-none font-medium uppercase tracking-[0.08em] text-[var(--cs-ink-3)]">
                   FinOps · SecOps · Explainable AI
@@ -107,9 +107,7 @@ export const LandingPage: React.FC = () => {
                 Console currently runs on labeled demo data. AWS credentials are never stored in the browser.
               </p>
             </div>
-            <div className="relative z-20">
-              <HeroVideo targetHeight={contentHeight} />
-            </div>
+            <HeroVideo targetHeight={contentHeight} />
           </div>
         </div>
       </section>
